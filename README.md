@@ -1,13 +1,13 @@
 # ProyectoDesarrollo
 # Stride & Co.
 
-## Descripci�n del proyecto
+## Descripcion del proyecto
 
-Stride & Co. es una tienda deportiva que actualmente administra sus ventas, pedidos e inventario mediante WhatsApp, hojas de c�lculo y procesos manuales.
+Stride & Co. es una tienda deportiva que actualmente administra sus ventas, pedidos e inventario mediante WhatsApp, hojas de calculo y procesos manuales.
 
-El proyecto consiste en desarrollar una aplicaci�n web que permita digitalizar estos procesos, facilitando la consulta del cat�logo, la gesti�n del inventario, la realizaci�n y seguimiento de pedidos, as� como el control de usuarios y sus respectivos roles y permisos.
+El proyecto consiste en desarrollar una aplicacion web que permita digitalizar estos procesos, facilitando la consulta del catalogo, la gestion del inventario, la realizacion y seguimiento de pedidos, asi como el control de usuarios y sus respectivos roles y permisos.
 
-La aplicaci�n busca centralizar la informaci�n de la tienda, reducir errores en la administraci�n de pedidos e inventario y mejorar la comunicaci�n entre las �reas de ventas, operaciones y administraci�n.
+La aplicacion busca centralizar la informacion de la tienda, reducir errores en la administracion de pedidos e inventario y mejorar la comunicacion entre las areas de ventas, operaciones y administracion.
 
 ## Integrantes del equipo
 
