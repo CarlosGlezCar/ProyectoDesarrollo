@@ -22,4 +22,4 @@ function destroy(req, res, next){
     });
 }
 
-module.exports = {list, create, find, update, destroy};
+module.exports = {list, create, update, destroy};
