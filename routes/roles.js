@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const controller = require('../controllers/users')
+const controller = require('../controllers/roles')
 
 /* GET users and its roles. */
 router.get('/', controller.list);
