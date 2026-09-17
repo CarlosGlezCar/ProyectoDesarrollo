@@ -20,4 +20,4 @@ function update(req, res, next){
         data: {}
     });
 }
-module.exports = {list, create, find, update, destroy};
+module.exports = {list, find, update};
