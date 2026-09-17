@@ -6,21 +6,6 @@ function create(req, res, next){
     });
 }
 
-//READ
-function list(req, res, next) {
-    res.json({
-        message: "List of current products",
-        data: []
-    });
-}
-
-function find(req, res, next){
-    res.json({
-        message: "Product by id",
-        data: {}
-    });
-}
-
 //UPDATE
 function update(req, res, next){
     res.json({
