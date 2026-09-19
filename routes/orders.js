@@ -6,9 +6,6 @@ const controller = require('../controllers/orders')
 /*POST user create*/
 router.post('/', controller.create);
 
-/* GET users listing. */
-router.get('/', controller.list);
-
 /*GET user by id*/
 router.get('/:id', controller.find);
 
