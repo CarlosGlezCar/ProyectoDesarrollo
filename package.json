@@ -5,7 +5,8 @@
   "scripts": {
     "start": "node ./bin/www",
     "lint": "eslint .",
-    "dev": "supervisor ./bin/www"
+    "dev": "supervisor ./bin/www",
+    "test": "jest --runInBand"
   },
   "dependencies": {
     "cookie-parser": "~1.4.4",
@@ -18,6 +19,8 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "eslint": "^10.10.0",
+    "jest": "^30.5.2",
+    "supertest": "^7.2.2",
     "supervisor": "^0.12.0"
   }
 }
