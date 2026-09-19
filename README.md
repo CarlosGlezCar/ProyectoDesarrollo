@@ -9,6 +9,13 @@ El proyecto consiste en desarrollar una aplicacion web que permita digitalizar e
 
 La aplicacion busca centralizar la informacion de la tienda, reducir errores en la administracion de pedidos e inventario y mejorar la comunicacion entre las areas de ventas, operaciones y administracion.
 
+## Instalación
+
+Clonar el repositorio e instalar las dependencias:
+
+bash
+npm install
+
 ## Integrantes del equipo
 
 * **Product Owner:** Jose Fernando Martinez Pacheco
