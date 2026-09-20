@@ -46,6 +46,12 @@ app.use(function(req, res, next) {
 
 // error handler
 app.use(function(err, req, res, next) {
+  const status = err.status || 500;
+
+  if (req.originalUrl.startsWith('/api')) {
+   return res.status(status).json({ message: err.message, data: null });
+  }
+  
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
