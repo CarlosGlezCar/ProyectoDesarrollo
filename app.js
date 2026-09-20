@@ -20,7 +20,10 @@ const app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
-app.use(logger('dev'));
+// Logging de solicitudes HTTP (se desactiva en pruebas)
+   if (app.get('env') !== 'test') {
+     app.use(logger(app.get('env') === 'production' ? 'combined' : 'dev'));
+   }
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
