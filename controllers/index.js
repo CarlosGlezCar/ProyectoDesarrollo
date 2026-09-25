@@ -5,7 +5,7 @@ function home(req, res, next) {
 }
 
 function healthCheck(req, res){
-    req.status(200).json({
+    res.status(200).json({
         status : "UP"
     });
 }
