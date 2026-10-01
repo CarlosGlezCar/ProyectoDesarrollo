@@ -1,39 +1,67 @@
+const User = require('../models/relationals/User');
+
 //CREATE
-function create(req, res, next){
+async function create(req, res, next){
+    const name = req.body.name;
+    const lastName = req.body.lastName;
+    const email = req.body.email;
+
+    const user = await User.create({first_name: name, last_name: lastName, email: email});
+
     res.status(201).json({
         message: "user created",
-        data: {}
+        data: user
     });
 }
 
 //READ
-function list(req, res, next) {
+async function list(req, res, next) {
+    const users = await User.findAll();
     res.json({
         message: "Users list",
-        data: []
+        data: users
     });
 }
 
-function find(req, res, next){
+async function find(req, res, next){
+    const id = req.params.id;
+    const user = await User.findByPk(id);
     res.json({
         message: "User by id",
-        data: {}
+        data: user
     });
 }
 
 //UPDATE
-function update(req, res, next){
+async function update(req, res, next){
+    const id = req.params.id; 
+    const name = req.body.name;
+    const lastName = req.body.lastName;
+    const email = req.body.email;
+    const user = await User.findByPk(id);
+    if(!user) res.status(404).json({ message: 'User not found'});
+    let changes = {};
+    changes.first_name = name ? name : user.name;
+    changes.last_name = lastName ? lastName : user.lastName;
+    changes.email = email ? email : user.email;
+
+    await user.update(changes);
+
     res.json({
         message: "User update",
-        data: {}
+        data: user
     });
 }
 
 //DELETE
-function destroy(req, res, next){
+async function destroy(req, res, next){
+    const id = req.params.id;
+    const user = await User.findByPk(id);
+    if(!user) res.status(404).json({ message: 'User not found'});
+    await user.destroy;
     res.json({
         message: "User delete",
-        data: {}
+        data: user
     });
 }
 
