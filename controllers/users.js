@@ -58,7 +58,7 @@ async function destroy(req, res, next){
     const id = req.params.id;
     const user = await User.findByPk(id);
     if(!user) res.status(404).json({ message: 'User not found'});
-    await user.destroy;
+    await user.destroy();
     res.json({
         message: "User delete",
         data: user
