@@ -1,8 +1,11 @@
+const { Order } = require('../models/documents');
+
 //CREATE
-function create(req, res, next){
+async function create(req, res, next){
+    const order = await Order.create(req.body);
     res.status(201).json({
         message: "Create an order",
-        data: {}
+        data: order
     });
 }
 
