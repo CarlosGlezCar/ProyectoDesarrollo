@@ -1,68 +1,138 @@
-const User = require('../models/relationals/User');
+const { User, Role } = require('../models/relationals');
 
-//CREATE
-async function create(req, res, next){
-    const name = req.body.name;
-    const lastName = req.body.lastName;
-    const email = req.body.email;
+//* CREATE
+async function create(req, res, next) {
+    try {
+        const { name, lastName, email, roleId } = req.body;
 
-    const user = await User.create({first_name: name, last_name: lastName, email: email});
+        const user = await User.create({
+            first_name: name,
+            last_name: lastName,
+            email: email,
+            role_id: roleId
+        });
 
-    res.status(201).json({
-        message: "user created",
-        data: user
-    });
+        res.status(201).json({
+            message: 'User created',
+            data: user
+        });
+
+    } catch (err) {
+        next(err);
+    }
 }
 
-//READ
+//* READ ALL
 async function list(req, res, next) {
-    const users = await User.findAll();
-    res.json({
-        message: "Users list",
-        data: users
-    });
+    try {
+        const users = await User.findAll({
+            include: {
+                model: Role,
+                as: 'role'
+            }
+        });
+
+        res.json({
+            message: 'Users list',
+            data: users
+        });
+
+    } catch (err) {
+        next(err);
+    }
 }
 
-async function find(req, res, next){
-    const id = req.params.id;
-    const user = await User.findByPk(id);
-    res.json({
-        message: "User by id",
-        data: user
-    });
+//* READ BY ID
+async function find(req, res, next) {
+    try {
+        const id = req.params.id;
+
+        const user = await User.findByPk(id, {
+            include: {
+                model: Role,
+                as: 'role'
+            }
+        });
+
+        if (!user) {
+            return res.status(404).json({
+                message: 'User not found'
+            });
+        }
+
+        res.json({
+            message: 'User by id',
+            data: user
+        });
+
+    } catch (err) {
+        next(err);
+    }
 }
 
-//UPDATE
-async function update(req, res, next){
-    const id = req.params.id; 
-    const name = req.body.name;
-    const lastName = req.body.lastName;
-    const email = req.body.email;
-    const user = await User.findByPk(id);
-    if(!user) res.status(404).json({ message: 'User not found'});
-    let changes = {};
-    changes.first_name = name ? name : user.name;
-    changes.last_name = lastName ? lastName : user.lastName;
-    changes.email = email ? email : user.email;
+//* UPDATE
+async function update(req, res, next) {
+    try {
+        const id = req.params.id;
 
-    await user.update(changes);
+        const { name, lastName, email, roleId } = req.body;
 
-    res.json({
-        message: "User update",
-        data: user
-    });
+        const user = await User.findByPk(id);
+
+        if (!user) {
+            return res.status(404).json({
+                message: 'User not found'
+            });
+        }
+
+        const changes = {
+            first_name: name ?? user.first_name,
+            last_name: lastName ?? user.last_name,
+            email: email ?? user.email,
+            role_id: roleId ?? user.role_id
+        };
+
+        await user.update(changes);
+
+        res.json({
+            message: 'User updated',
+            data: user
+        });
+
+    } catch (err) {
+        next(err);
+    }
 }
 
-//DELETE
-async function destroy(req, res, next){
-    const id = req.params.id;
-    const user = await User.findByPk(id);
-    if(!user) res.status(404).json({ message: 'User not found'});
-    await user.destroy();
-    res.json({
-        message: "User delete",
-        data: user
-    });
+//* DELETE
+async function destroy(req, res, next) {
+    try {
+        const id = req.params.id;
+
+        const user = await User.findByPk(id);
+
+        if (!user) {
+            return res.status(404).json({
+                message: 'User not found'
+            });
+        }
+
+        await user.destroy();
+
+        res.json({
+            message: 'User deleted',
+            data: user
+        });
+
+    } catch (err) {
+        next(err);
+    }
 }
 
-module.exports = {list, create, find, update, destroy};
+module.exports = {
+    list,
+    create,
+    find,
+    update,
+    destroy
+};
