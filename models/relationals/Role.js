@@ -8,7 +8,7 @@ const Role = sequelize.define('Role', {
 
 {
     tableName: 'roles',
-    timestamps: false // --> created_at y updated_at
+    timestamps: true // --> created_at y updated_at
 });
 
 module.exports = Role;
