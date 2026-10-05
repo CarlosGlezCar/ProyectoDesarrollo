@@ -1,32 +1,65 @@
-//READ
-function list(req, res, next) {
-    res.json({
-        message: "Show users type of permissions",
-        data: []
+const Permission = require('../models/relationals/Permission');
+
+//CREATE
+async function create(req, res, next){
+    const key = req.body.key;
+    const description = req.body.description;
+
+    const permission = await Permission.create({key: key, description: description});
+
+    res.status(201).json({
+        message: "Permission created",
+        data: permission
     });
 }
 
-function find(req, res, next){
+//READ
+async function list(req, res, next) {
+    const permissions = await Permission.findAll();
     res.json({
-        message: "Show certain user permissions",
-        data: {}
+        message: "Permissions list",
+        data: permissions
+    });
+}
+
+async function find(req, res, next){
+    const id = req.params.id;
+    const permission = await Permission.findByPk(id);
+    res.json({
+        message: "Find permission by id",
+        data: permission
     });
 }
 
 //UPDATE
-function update(req, res, next){
+async function update(req, res, next){
+    const id = req.params.id; 
+    const key = req.body.key;
+    const description = req.body.description;
+    const permission = await Permission.findByPk(id);
+    if(!permission) res.status(404).json({ message: 'Permission not found'});
+    let changes = {};
+    changes.key = key ? key : permission.key;
+    changes.description = description ? description : role.description;
+
+    await permission.update(changes);
+
     res.json({
-        message: "Update user permissions",
-        data: {}
+        message: "Permission update",
+        data: permission
     });
 }
 
 //DELETE
-function destroy(req, res, next){
+async function destroy(req, res, next){
+    const id = req.params.id;
+    const permission = await Permission.findByPk(id);
+    if(!permission) res.status(404).json({ message: 'Permission not found'});
+    await permission.destroy();
     res.json({
-        message: "Remove a user permission",
-        data: {}
+        message: "Permission delete",
+        data: permission
     });
 }
 
-module.exports = {list, find, update, destroy};
+module.exports = {list, find, update, destroy, create};
