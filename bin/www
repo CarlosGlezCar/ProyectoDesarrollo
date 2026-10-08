@@ -25,11 +25,20 @@ app.set('port', port);
 const server = http.createServer(app);
 
 async function start(){
+  try{
+
+  await connectMongo();
+  debug('Conexión a MongoDB generada correctamente.');
+
   await sequelize.authenticate();
   //Crear las tablas si es que no existen
   await sequelize.sync();
   debug('Conexión a mysql generada correctamente.');
   server.listen(port);
+  } catch (error) {
+    console.error('Error al inicial el servidor: ', error);
+    process.exit(1);
+  }
 }
 
 /**
