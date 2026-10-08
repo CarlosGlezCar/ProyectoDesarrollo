@@ -9,26 +9,39 @@ async function create(req, res, next){
     });
 }
 
-function find(req, res, next){
+async function find(req, res, next){
+    const order = await Order.findById(req.params.id);
     res.json({
         message: "Track order by id",
-        data: {}
+        data: order
     });
 }
 
 //UPDATE
-function update(req, res, next){
+async function update(req, res, next){
+    const order = await Order.findByIdAndUpdate(
+        req.params.id,
+        req.body,
+        {new: true, runValidators: true}
+    );
+
+    if(!order) {
+        return res.status(404).json({message: 'Order not found'});
+    }
+
     res.json({
         message: "Update order status",
-        data: {}
+        data: order
     });
 }
 
 //DELETE
-function destroy(req, res, next){
+async function destroy(req, res, next){
+    const order = await Order.findByIdAndDelete(req.params.id);
+
     res.json({
         message: "Remove an order",
-        data: {}
+        data: order
     });
 }
 

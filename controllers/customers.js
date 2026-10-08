@@ -11,7 +11,7 @@ async function create(req, res, next){
 
 //READ
 async function list(req, res, next) {
-    const customers = await Customer.find();
+    const customer = await Customer.find();
     res.json({
         message: "Show customer list",
         data: customer
@@ -29,7 +29,9 @@ async function find(req, res, next){
 //UPDATE
 async function update(req, res, next){
     const customer = await Customer.findByIdAndUpdate(req.params.id, req.body, {new: true, runValidators: true});
-    if(!customer) res.status(404).json({message: 'Customer not found'});
+    if(!customer) {
+    return res.status(404).json({message: 'Customer not found'});
+    }
     res.json({
         message: "Update customer info",
         data: customer
@@ -38,7 +40,7 @@ async function update(req, res, next){
 
 //DELETE
 async function destroy(req, res, next){
-    const customr = await Customer.findByIdAndDelete();
+    const customer = await Customer.findByIdAndDelete(req.params.id);
     res.json({
         message: "Remove a customer",
         data: customer
