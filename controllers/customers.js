@@ -1,39 +1,49 @@
+const { Customer } = require('../models/documents');
+
 //CREATE
-function create(req, res, next){
+async function create(req, res, next){
+    const customer = await Customer.create(req.body);
     res.status(201).json({
         message: "Add a new customer",
-        data: {}
+        data: customer
     });
 }
 
 //READ
-function list(req, res, next) {
+async function list(req, res, next) {
+    const customer = await Customer.find();
     res.json({
         message: "Show customer list",
-        data: []
+        data: customer
     });
 }
 
-function find(req, res, next){
+async function find(req, res, next){
+    const customer = await Customer.findById(req.params.id);
     res.json({
         message: "Find customer by id",
-        data: {}
+        data: customer
     });
 }
 
 //UPDATE
-function update(req, res, next){
+async function update(req, res, next){
+    const customer = await Customer.findByIdAndUpdate(req.params.id, req.body, {new: true, runValidators: true});
+    if(!customer) {
+    return res.status(404).json({message: 'Customer not found'});
+    }
     res.json({
         message: "Update customer info",
-        data: {}
+        data: customer
     });
 }
 
 //DELETE
-function destroy(req, res, next){
+async function destroy(req, res, next){
+    const customer = await Customer.findByIdAndDelete(req.params.id);
     res.json({
         message: "Remove a customer",
-        data: {}
+        data: customer
     });
 }
 

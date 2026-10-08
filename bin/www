@@ -7,6 +7,8 @@
 const app = require('../app');
 const debug = require('debug')('stride-co:server');
 const http = require('http');
+const connectMongo = require('../config/mongoose');
+connectMongo();
 const {sequelize} = require('../models/relationals');
 
 /**
