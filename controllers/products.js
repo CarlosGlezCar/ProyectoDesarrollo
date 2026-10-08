@@ -1,4 +1,4 @@
-const { Product } = require('../models/relationals');
+const { Product, ProductVariant, Inventory } = require('../models/relationals');
 
 //CREATE
 async function create(req, res, next) {
