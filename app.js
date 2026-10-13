@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const createError = require('http-errors');
 const express = require('express');
 const path = require('path');
@@ -6,6 +8,7 @@ const logger = require('morgan');
 
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
+const authRouter = require('./routes/auth');
 const customersRouter = require('./routes/customers');
 const inventoryRouter = require('./routes/inventory');
 const ordersRouter = require('./routes/orders');
@@ -31,6 +34,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/api/users', usersRouter);
+app.use('/api/auth', authRouter);
 app.use('/api/customers', customersRouter);
 app.use('/api/inventory', inventoryRouter);
 app.use('/api/orders', ordersRouter);
@@ -46,6 +50,11 @@ app.use(function(req, res, next) {
 
 // error handler
 app.use(function(err, req, res, next) {
+  if (err.name === 'UnauthorizedError') {
+    return res.status(401).json({
+        message: 'Unauthorized'
+    });
+  }
   const status = err.status || 500;
 
   if (req.originalUrl.startsWith('/api')) {

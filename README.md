@@ -37,7 +37,7 @@ cd ProyectoDesarrollo
 npm install
 ```
 
-No se necesita ningún archivo `.env` para ejecutar el proyecto. Opcionalmente se puede definir la variable `PORT` (por defecto `3000`).
+Para ejecutar el proyecto se deben configurar las variables de JWT y bcrypt en `.env`, como se explica en la sección Autenticación. La variable `PORT` es opcional y su valor predeterminado es `3000`.
 
 ## Ejecución
 
@@ -110,3 +110,46 @@ Ruta inexistente (404):
   "data": null
 }
 ```
+## Autenticación
+
+Las contraseñas se protegen con bcrypt. El factor de costo se obtiene de `BCRYPT_SALT_ROUNDS`, configurado en `10`.
+
+Al crear un usuario o cambiar su contraseña se generan un nuevo salt con `bcrypt.genSalt` y un nuevo hash con `bcrypt.hash`. Ambos se almacenan juntos en `salt_key` y `password_hash`. La contraseña se verifica con `bcrypt.compare`.
+
+Las funciones reutilizables `hashPassword` y `verifyPassword` están en `utils/passwords.js`, separadas del controller de usuarios. `User.toJSON()` oculta `password`, `password_hash` y `salt_key` en las respuestas.
+
+### Login
+
+`POST /api/auth/login` recibe `email` y `password` en un cuerpo JSON.
+
+Si las credenciales son correctas y el usuario está activo, responde `200` con un token firmado mediante jsonwebtoken y el algoritmo `HS256`. El token identifica al usuario mediante `sub` y contiene los datos estándar de emisión, expiración, issuer y audience.
+
+Los datos incompletos reciben `400`. Las credenciales incorrectas y los usuarios inactivos reciben `401` con el mensaje genérico `Invalid credentials`.
+
+### Usuario autenticado
+
+`GET /api/auth/me` utiliza el middleware `authenticate`. Este verifica la firma, expiración, issuer y audience mediante express-jwt, permitiendo únicamente `HS256`.
+
+A partir de `req.auth.sub`, busca al usuario, comprueba que esté activo y lo coloca en `req.user`.
+
+Con un token válido responde `200` con los datos seguros del usuario. Un token inexistente, inválido o expirado recibe `401` en JSON. También se rechaza con `401` si el usuario del token ya no existe o está inactivo.
+
+Ejemplo del encabezado:
+
+```text
+Authorization: Bearer <token>
+```
+
+### Variables de entorno
+
+Crear `.env` a partir de `.env.example` y asignar una clave privada y aleatoria a `JWT_SECRET`.
+
+```env
+JWT_SECRET=
+JWT_EXPIRES_IN=15m
+JWT_ISSUER=stride-co
+JWT_AUDIENCE=stride-co-api
+BCRYPT_SALT_ROUNDS=10
+```
+
+La expiración configurada es de **15 minutos**. El archivo `.env` está excluido mediante `.gitignore`; el repositorio conserva `.env.example` sin secretos reales.
