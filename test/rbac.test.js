@@ -139,7 +139,9 @@ describe('RBAC authorization', () => {
   });
 
   test('USER without orders:read:any cannot read another users order', async () => {
-    rolePermissions.set(3, []);
+    rolePermissions.set(3, [
+    { key: 'orders:read:own' }
+    ]);
 
     Customer.findById.mockResolvedValue({
       userId: 202
