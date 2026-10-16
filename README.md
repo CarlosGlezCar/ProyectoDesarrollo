@@ -153,3 +153,74 @@ BCRYPT_SALT_ROUNDS=10
 ```
 
 La expiración configurada es de **15 minutos**. El archivo `.env` está excluido mediante `.gitignore`; el repositorio conserva `.env.example` sin secretos reales.
+
+## Control de acceso basado en roles
+
+### Descripción
+
+El proyecto implementa un sistema de control de acceso basado en roles (RBAC, Role-Based Access Control). La autenticación identifica al usuario mediante un token JWT, mientras que la autorización determina qué operaciones puede realizar según los permisos asociados a su rol.
+
+Los permisos se obtienen de la base de datos mediante la relación entre las entidades `Role` y `Permission`, utilizando la tabla intermedia `role_permissions`. No se utilizan nombres de roles codificados en el middleware para decidir el acceso.
+
+### Convención de permisos
+
+Cada permiso utiliza el formato:
+
+`recurso:acción:posesión`
+
+- **Recurso:** entidad sobre la que se realiza la operación, por ejemplo, `products` u `orders`.
+- **Acción:** operación permitida: `create`, `read`, `update` o `delete`.
+- **Posesión:** `own` permite operar únicamente sobre recursos propios; `any` permite operar sobre recursos de cualquier usuario, según el permiso concedido.
+
+Ejemplos:
+
+| Permiso | Significado |
+|---|---|
+| `products:delete:any` | Eliminar cualquier producto. |
+| `orders:read:own` | Consultar únicamente órdenes propias. |
+| `orders:read:any` | Consultar órdenes de cualquier usuario. |
+| `orders:update:own` | Actualizar únicamente órdenes propias. |
+
+### Matriz de permisos
+
+La siguiente tabla muestra los escenarios de autorización comprobados mediante pruebas automatizadas. Los permisos efectivos de cada rol dependen de los registros almacenados en la base de datos.
+
+| Rol de prueba | Permiso o escenario | Resultado esperado |
+|---|---|---|
+| ADMIN | `products:delete:any` | Permitido |
+| SALES | Eliminar productos sin `products:delete:any` | Denegado |
+| USER | `orders:read:own` sobre una orden propia | Permitido |
+| USER | `orders:read:own` sobre una orden ajena | Denegado |
+| USER | Consultar una orden ajena sin `orders:read:any` | Denegado |
+
+### Endpoints protegidos
+
+Las rutas protegidas utilizan primero el middleware `authenticate` y después `authorize`.
+
+| Método | Endpoint | Permiso requerido |
+|---|---|---|
+| POST | `/api/products` | `products:create:any` |
+| GET | `/api/products` | `products:read:any` |
+| GET | `/api/products/:id` | `products:read:any` |
+| PUT | `/api/products/:id` | `products:update:any` |
+| DELETE | `/api/products/:id` | `products:delete:any` |
+| POST | `/api/orders` | `orders:create:any` |
+| GET | `/api/orders/:id` | `orders:read:own` u `orders:read:any` |
+| PUT | `/api/orders/:id` | `orders:update:own` |
+| DELETE | `/api/orders/:id` | `orders:delete:own` |
+
+### Validación de la posesión
+
+Para las órdenes, el middleware verifica la propiedad del recurso mediante la relación entre `Order` y `Customer`. Compara el usuario asociado al cliente (`Customer.userId`) con el identificador del usuario autenticado (`req.user.id`).
+
+Cuando el permiso es `own`, una orden perteneciente a otro usuario se rechaza con HTTP `403 Forbidden`. Cuando existe el permiso `any` para la lectura de órdenes, se permite consultar órdenes de otros usuarios.
+
+### Respuestas de autorización
+
+- **401 Unauthorized:** no se proporcionó un token válido o el usuario no está autenticado.
+- **403 Forbidden:** el usuario está autenticado, pero no tiene el permiso necesario o no es propietario del recurso.
+- **404 Not Found:** la orden solicitada no existe.
+
+### Pruebas automatizadas
+
+Las pruebas de `test/rbac.test.js` utilizan Jest y Supertest para verificar los escenarios de acceso permitido y denegado, incluida la validación de propiedad de las órdenes.
