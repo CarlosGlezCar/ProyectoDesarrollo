@@ -5,6 +5,7 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
+const { expressjwt } = require('express-jtw');
 
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
@@ -18,6 +19,9 @@ const rolesRouter = require('./routes/roles');
 const variantsRouter = require('./routes/variants');
 
 const app = express();
+
+const secret = "e890eb5d680cb1d28ddd72d674e92eff8c36732f";
+app.use(expressjwt({ secret, algorithms:["HS256"]}).unless({path:['/api/auth/login']})); //lo copie al cual como lo tiene el profe, puede que requiera cambio
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
