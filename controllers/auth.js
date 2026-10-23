@@ -33,7 +33,7 @@ async function login(req, res, next) {
 
         if (Buffer.byteLength(password, 'utf8') > 72) {
             return res.status(401).json({
-                message: 'Invalid credentials'
+                message: req.__('auth.invalidCredentials')
             });
         }
 
@@ -41,7 +41,7 @@ async function login(req, res, next) {
 
         if (!user || !user.active) {
             return res.status(401).json({
-                message: 'Invalid credentials'
+                message: req.__('auth.invalidCredentials')
             });
         }
 
@@ -52,7 +52,7 @@ async function login(req, res, next) {
 
         if (!validPassword) {
             return res.status(401).json({
-                message: 'Invalid credentials'
+                message: req.__('auth.invalidCredentials')
             });
         }
 
