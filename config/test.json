@@ -1,0 +1,8 @@
+{
+    "jwt": {
+        "secret": "clave-ficticia-exclusiva-para-pruebas"
+    },
+    "bcrypt": {
+        "saltRounds": 4
+    }
+}
