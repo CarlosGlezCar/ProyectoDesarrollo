@@ -15,7 +15,7 @@ async function create(req, res, next) {
         });
 
         res.status(201).json({
-            message: req.__('products.created'),
+            message: 'Product created',
             data: product
         });
     } catch (err) {
@@ -38,7 +38,7 @@ async function list(req, res, next) {
         });
 
         res.json({
-            message: req.__('products.list'),
+            message: 'Products list',
             data: products
         });
 
@@ -64,12 +64,12 @@ async function find(req, res, next) {
 
         if (!product) {
             return res.status(404).json({
-                message: req.__('products.notFound')
+                message: 'Product not found'
             });
         }
 
         res.json({
-            message: req.__('products.found'),
+            message: 'Product by id',
             data: product
         });
 
@@ -88,7 +88,7 @@ async function update(req, res, next) {
 
         if (!product) {
             return res.status(404).json({
-                message: req.__('products.notFound')
+                message: 'Product not found'
             });
         }
 
@@ -104,7 +104,7 @@ async function update(req, res, next) {
         await product.update(changes);
 
         res.json({
-            message: req.__('products.updated'),
+            message: 'Product updated',
             data: product
         });
 
@@ -121,14 +121,14 @@ async function destroy(req, res, next) {
 
         if (!product) {
             return res.status(404).json({
-                message: req.__('products.notFound')
+                message: 'Product not found'
             });
         }
 
         await product.destroy();
 
         res.json({
-            message: req.__('products.deleted'),
+            message: 'Product deleted',
             data: product
         });
 

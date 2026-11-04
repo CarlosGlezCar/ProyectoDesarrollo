@@ -27,7 +27,7 @@ async function login(req, res, next) {
             password.length === 0
         ) {
             return res.status(400).json({
-                message: req.__('auth.credentialsRequired')
+                message: 'Email and password are required'
             });
         }
 
@@ -68,7 +68,7 @@ async function login(req, res, next) {
         );
 
         res.json({
-            message: req.__('auth.loginSuccessful'),
+            message: "Login successful",
             data:{
                 token: signToken(user),
                 tokenType: "Bearer",

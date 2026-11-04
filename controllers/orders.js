@@ -4,7 +4,7 @@ const { Order } = require('../models/documents');
 async function create(req, res, next){
     const order = await Order.create(req.body);
     res.status(201).json({
-        message: req.__('orders.created'),
+        message: "Create an order",
         data: order
     });
 }
@@ -12,7 +12,7 @@ async function create(req, res, next){
 async function find(req, res, next){
     const order = await Order.findById(req.params.id);
     res.json({
-        message: req.__('orders.found'),
+        message: "Track order by id",
         data: order
     });
 }
@@ -26,11 +26,11 @@ async function update(req, res, next){
     );
 
     if(!order) {
-        return res.status(404).json({message: req.__('orders.notFound')});
+        return res.status(404).json({message: 'Order not found'});
     }
 
     res.json({
-        message: req.__('orders.statusUpdated'),
+        message: "Update order status",
         data: order
     });
 }
@@ -40,7 +40,7 @@ async function destroy(req, res, next){
     const order = await Order.findByIdAndDelete(req.params.id);
 
     res.json({
-        message: req.__('orders.deleted'),
+        message: "Remove an order",
         data: order
     });
 }
