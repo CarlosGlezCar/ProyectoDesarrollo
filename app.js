@@ -5,6 +5,7 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const { expressjwt } = require('express-jwt');
 const i18n = require('./config/i18n');
+const config = require('config');
 
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
@@ -19,8 +20,18 @@ const variantsRouter = require('./routes/variants');
 
 const app = express();
 
-const secret = "e890eb5d680cb1d28ddd72d674e92eff8c36732f";
-app.use(expressjwt({ secret, algorithms:["HS256"]}).unless({path:['/api/auth/login']})); //lo copie al cual como lo tiene el profe, puede que requiera cambio
+app.use(expressjwt({
+  secret: config.get('jwt.secret'),
+  algorithms: ['HS256'],
+  issuer: config.get('jwt.issuer'),
+  audience: config.get('jwt.audience')
+}).unless({
+  path: [
+    '/',
+    '/health',
+    '/api/auth/login'
+  ]
+}));
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
