@@ -4,17 +4,30 @@
  * Module dependencies.
  */
 
+const config = require('config');
+
+// Validar que exista la clave JWT
+if (
+  !config.has('jwt.secret') ||
+  !config.get('jwt.secret')
+) {
+  console.error(
+    'Error: falta jwt.secret en la configuración.'
+  );
+  process.exit(1);
+}
+
 const app = require('../app');
 const debug = require('debug')('stride-co:server');
 const http = require('http');
 const connectMongo = require('../config/mongoose');
-const {sequelize} = require('../models/relationals');
-
+const { sequelize } = require('../models/relationals');
+const config = require('config');
 /**
  * Get port from environment and store in Express.
  */
 
-const port = normalizePort(process.env.PORT || '3000');
+const port = normalizePort(config.get('server.port'));
 app.set('port', port);
 
 /**
