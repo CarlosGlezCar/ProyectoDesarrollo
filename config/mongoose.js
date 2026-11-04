@@ -1,9 +1,8 @@
 const mongoose = require('mongoose');
-const config = require('config');
 
-function connectMongo() {
-    const uri = config.get('database.mongo.uri');
-    return mongoose.connect(uri);
+function connectMongo(){
+    const url = "mongodb://localhost:27017/ProyectoDesarrollo";
+    return mongoose.connect(url);
 }
 
 module.exports = connectMongo;
