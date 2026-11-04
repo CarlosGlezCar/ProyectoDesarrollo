@@ -4,7 +4,7 @@ const { Customer } = require('../models/documents');
 async function create(req, res, next){
     const customer = await Customer.create(req.body);
     res.status(201).json({
-        message: "Add a new customer",
+        message: req.__('customers.created'),
         data: customer
     });
 }
@@ -13,7 +13,7 @@ async function create(req, res, next){
 async function list(req, res, next) {
     const customer = await Customer.find();
     res.json({
-        message: "Show customer list",
+        message: req.__('customers.list'),
         data: customer
     });
 }
@@ -21,7 +21,7 @@ async function list(req, res, next) {
 async function find(req, res, next){
     const customer = await Customer.findById(req.params.id);
     res.json({
-        message: "Find customer by id",
+        message: req.__('customers.found'),
         data: customer
     });
 }
@@ -30,10 +30,10 @@ async function find(req, res, next){
 async function update(req, res, next){
     const customer = await Customer.findByIdAndUpdate(req.params.id, req.body, {new: true, runValidators: true});
     if(!customer) {
-    return res.status(404).json({message: 'Customer not found'});
+    return res.status(404).json({message: req.__('customers.notFound')});
     }
     res.json({
-        message: "Update customer info",
+        message: req.__('customers.updated'),
         data: customer
     });
 }
@@ -42,7 +42,7 @@ async function update(req, res, next){
 async function destroy(req, res, next){
     const customer = await Customer.findByIdAndDelete(req.params.id);
     res.json({
-        message: "Remove a customer",
+        message: req.__('customers.deleted'),
         data: customer
     });
 }

@@ -1,11 +1,8 @@
-require('dotenv').config();
-
 const createError = require('http-errors');
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
-const { expressjwt } = require('express-jwt');
 const i18n = require('./config/i18n');
 
 const indexRouter = require('./routes/index');
@@ -21,9 +18,6 @@ const variantsRouter = require('./routes/variants');
 
 const app = express();
 
-const secret = "e890eb5d680cb1d28ddd72d674e92eff8c36732f";
-app.use(expressjwt({ secret, algorithms:["HS256"]}).unless({path:['/api/auth/login']})); //lo copie al cual como lo tiene el profe, puede que requiera cambio
-
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
@@ -37,6 +31,31 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(i18n.init);
+app.use((req, res, next) => {
+  const queryLang =
+    typeof req.query.lang === 'string'
+      ? req.query.lang
+      : null;
+
+  const headerLang = req.get('accept-language')
+    ?.split(',')[0];
+
+  const requested = queryLang ||
+    headerLang ||
+    'es';
+
+  const base = requested
+    .trim()
+    .toLowerCase()
+    .split('-')[0];
+
+  const locale = ['es', 'en'].includes(base)
+    ? base
+    : 'es';
+
+  i18n.setLocale(req, locale);
+  next();
+});
 
 app.use('/', indexRouter);
 app.use('/api/users', usersRouter);
@@ -54,25 +73,27 @@ app.use(function(req, res, next) {
   next(createError(404));
 });
 
-// error handler
+
+// Error handler
 app.use(function(err, req, res, next) {
-  if (err.name === 'UnauthorizedError') {
-    return res.status(401).json({
-        message: 'Unauthorized'
-    });
-  }
   const status = err.status || 500;
 
-  if (req.originalUrl.startsWith('/api')) {
-   return res.status(status).json({ message: err.message, data: null });
-  }
-  
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
+  const errorKey = status === 404
+    ? 'views.error.notFound'
+    : 'views.error.generic';
 
-  // render the error page
-  res.status(err.status || 500);
+  res.locals.title = req.__('views.error.title');
+  res.locals.message = req.__(errorKey);
+
+  // Indicar el idioma de la página
+  res.locals.locale = req.getLocale();
+
+  res.locals.error =
+    req.app.get('env') === 'development'
+      ? err
+      : {};
+
+  res.status(status);
   res.render('error');
 });
 
