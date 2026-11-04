@@ -15,7 +15,7 @@ async function list(req, res, next) {
         });
 
         return res.json({
-            message: req.__('inventory.list'),
+            message: 'Inventory list',
             data: inventory
         });
 
@@ -43,13 +43,13 @@ async function find(req, res, next) {
 
         if (!inventory) {
             return res.status(404).json({
-                message: req.__('inventory.notFound'),
+                message: 'Inventory not found',
                 data: null
             });
         }
 
         return res.json({
-                message: req.__('inventory.found'),
+            message: 'Inventory found',
             data: inventory
         });
 
@@ -67,7 +67,7 @@ async function update(req, res, next) {
 
         if (!inventory) {
             return res.status(404).json({
-                message: req.__('inventory.notFound'),
+                message: 'Inventory not found',
                 data: null
             });
         }
@@ -77,14 +77,14 @@ async function update(req, res, next) {
         // Evitar valores negativos
         if (stock !== undefined && stock < 0) {
             return res.status(400).json({
-                message: req.__('inventory.stockNegative'),
+                message: 'Stock cannot be negative',
                 data: null
             });
         }
 
         if (reserved !== undefined && reserved < 0) {
             return res.status(400).json({
-                message: req.__('inventory.reservedNegative'),
+                message: 'Reserved cannot be negative',
                 data: null
             });
         }
@@ -95,7 +95,7 @@ async function update(req, res, next) {
         // No reservar más productos de los que existen
         if (newReserved > newStock) {
             return res.status(400).json({
-                message: req.__('inventory.reservedExceedsStock'),
+                message: 'Reserved stock cannot be greater than stock',
                 data: null
             });
         }
@@ -106,7 +106,7 @@ async function update(req, res, next) {
         });
 
         return res.json({
-            message: req.__('inventory.updated'),
+            message: 'Inventory updated',
             data: inventory
         });
 
