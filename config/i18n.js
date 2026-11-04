@@ -1,14 +1,17 @@
+
 const path = require('path');
 const i18n = require('i18n');
+const config = require('config');
 
 i18n.configure({
-    loacales: ['es', 'en'],
-    //defaultLocale: 'es',
+    locales: ['es', 'en'],
+    defaultLocale: config.get('i18n.defaultLocale'),
     directory: path.join(__dirname, '..', 'locales'),
     queryParameter: 'lang',
     header: 'accept-language',
-    cookie: 'lang',
-    objectNotation: true // Permite usar obj.valor
+    objectNotation: true,
+    retryInDefaultLocale: true,
+    updateFiles: false
 });
 
 module.exports = i18n;

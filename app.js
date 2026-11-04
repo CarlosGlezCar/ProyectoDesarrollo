@@ -38,6 +38,32 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(i18n.init);
 
+app.use((req, res, next) => {
+  const queryLang =
+    typeof req.query.lang === 'string'
+      ? req.query.lang
+      : null;
+
+  const headerLang = req.get('accept-language')
+    ?.split(',')[0];
+
+  const requested = queryLang ||
+    headerLang ||
+    'es';
+
+  const base = requested
+    .trim()
+    .toLowerCase()
+    .split('-')[0];
+
+  const locale = ['es', 'en'].includes(base)
+    ? base
+    : 'es';
+
+  i18n.setLocale(req, locale);
+  next();
+});
+
 app.use('/', indexRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/auth', authRouter);

@@ -1,5 +1,132 @@
 {
+    "common": {
+        "success": "Operation completed successfully",
+        "badRequest": "Bad request",
+        "invalidData": "The provided data is invalid",
+        "invalidId": "The provided identifier is invalid",
+        "missingFields": "Required fields are missing",
+        "notFound": "Resource not found",
+        "routeNotFound": "Route not found",
+        "unauthorized": "Unauthorized",
+        "forbidden": "Access denied",
+        "internalError": "Internal server error",
+        "conflict": "Conflict with existing data",
+        "duplicate": "A record with that information already exists",
+        "validationError": "Validation error",
+        "databaseError": "Database access error"
+    },
     "auth": {
-        "invalidCredentials": "Invalid Credentials"
+        "invalidCredentials": "Invalid credentials",
+        "credentialsRequired": "Email and password are required",
+        "loginSuccessful": "Login successful",
+        "profileRetrieved": "User profile retrieved",
+        "tokenRequired": "Authentication token is required",
+        "invalidToken": "Invalid authentication token",
+        "tokenExpired": "Authentication token has expired"
+    },
+    "users": {
+        "list": "Users retrieved successfully",
+        "found": "User found",
+        "notFound": "User not found",
+        "created": "User created successfully",
+        "updated": "User updated successfully",
+        "deleted": "User deleted successfully",
+        "passwordRequired": "Password is required",
+        "passwordTooLong": "Password exceeds the bcrypt 72-byte limit",
+        "emailRequired": "Email is required",
+        "invalidEmail": "Invalid email address",
+        "emailExists": "Email address is already registered",
+        "invalidRole": "The selected role is invalid",
+        "inactive": "User is inactive"
+    },
+    "roles": {
+        "list": "Roles retrieved successfully",
+        "found": "Role found",
+        "notFound": "Role not found",
+        "created": "Role created successfully",
+        "updated": "Role updated successfully",
+        "deleted": "Role deleted successfully",
+        "nameRequired": "Role name is required",
+        "alreadyExists": "Role already exists"
+    },
+    "permissions": {
+        "list": "Permissions retrieved successfully",
+        "found": "Permission found",
+        "notFound": "Permission not found",
+        "created": "Permission created successfully",
+        "updated": "Permission updated successfully",
+        "deleted": "Permission deleted successfully",
+        "keyRequired": "Permission key is required",
+        "invalidKey": "Permission key does not have the required format",
+        "alreadyExists": "Permission already exists"
+    },
+    "products": {
+        "list": "Products retrieved successfully",
+        "found": "Product found",
+        "notFound": "Product not found",
+        "created": "Product created successfully",
+        "updated": "Product updated successfully",
+        "deleted": "Product deleted successfully",
+        "nameRequired": "Product name is required",
+        "invalidPrice": "Invalid product price",
+        "alreadyExists": "Product already exists"
+    },
+    "variants": {
+        "list": "Product variants retrieved successfully",
+        "found": "Product variant found",
+        "notFound": "Product variant not found",
+        "created": "Product variant created successfully",
+        "updated": "Product variant updated successfully",
+        "deleted": "Product variant deleted successfully",
+        "productNotFound": "Product not found",
+        "skuRequired": "Variant SKU is required",
+        "duplicateSku": "SKU is already registered",
+        "invalidPrice": "Invalid variant price"
+    },
+    "inventory": {
+        "list": "Inventory retrieved successfully",
+        "found": "Inventory record found",
+        "notFound": "Inventory record not found",
+        "created": "Inventory record created successfully",
+        "updated": "Inventory updated successfully",
+        "deleted": "Inventory record deleted successfully",
+        "stockNegative": "Stock cannot be negative",
+        "reservedNegative": "Reserved quantity cannot be negative",
+        "reservedExceedsStock": "Reserved quantity cannot exceed available stock",
+        "variantNotFound": "Product variant not found"
+    },
+    "customers": {
+        "list": "Customers retrieved successfully",
+        "found": "Customer found",
+        "notFound": "Customer not found",
+        "created": "Customer created successfully",
+        "updated": "Customer updated successfully",
+        "deleted": "Customer deleted successfully",
+        "invalidEmail": "Invalid customer email address",
+        "emailExists": "A customer with that email address already exists"
+    },
+    "orders": {
+        "list": "Orders retrieved successfully",
+        "found": "Order found",
+        "notFound": "Order not found",
+        "created": "Order created successfully",
+        "updated": "Order updated successfully",
+        "deleted": "Order deleted successfully",
+        "statusUpdated": "Order status updated successfully",
+        "notOwned": "You do not have permission to view this order",
+        "customerNotFound": "Order customer not found",
+        "emptyItems": "The order must contain at least one product",
+        "invalidStatus": "Invalid order status"
+    },
+    "views": {
+        "home": {
+        "title": "Stride & Co.",
+        "welcome": "Welcome to Stride & Co."
+        },
+        "error": {
+        "title": "An error occurred",
+        "notFound": "Page not found",
+        "generic": "The request could not be processed"
+        }
     }
 }

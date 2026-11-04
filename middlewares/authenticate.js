@@ -22,7 +22,7 @@ function authenticate(req, res, next) {
                 req.auth.sub.length === 0
             ) {
                 return res.status(401).json({
-                    message: 'Unauthorized'
+                    message: req.__('common.unauthorized')
                 });
             }
 
@@ -30,7 +30,7 @@ function authenticate(req, res, next) {
 
             if (!user || !user.active) {
                 return res.status(401).json({
-                    message: 'Unauthorized'
+                    message: req.__('common.unauthorized')
                 });
             }
 

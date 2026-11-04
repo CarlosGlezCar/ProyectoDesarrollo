@@ -1,13 +1,12 @@
-const { json } = require("express");
-
-function home(req, res, next) {
-    res.render('index', { title: 'Express' });
+function home(req, res) {
+  return res.render('index', {
+    title: req.__('views.home.title'),
+    description: req.__('views.home.description')
+  });
 }
 
-function healthCheck(req, res){
-    res.status(200).json({
-        status : "UP"
-    });
+function healthCheck(req, res) {
+  return res.status(200).json({ status: 'UP' });
 }
 
-module.exports = {home, healthCheck};
+module.exports = { home, healthCheck };
