@@ -36,19 +36,37 @@ app.set('port', port);
 
 const server = http.createServer(app);
 
-async function start(){
-  try{
 
-  await connectMongo();
-  debug('Conexión a MongoDB generada correctamente.');
+async function start() {
+  try {
+    console.log('Conectando a MongoDB...');
+    await connectMongo();
 
-  await sequelize.authenticate();
-  //Crear las tablas si es que no existen
-  await sequelize.sync();
-  debug('Conexión a mysql generada correctamente.');
-  server.listen(port);
+    console.log('MongoDB conectado');
+
+    const pgConfig = config.get('database.postgres');
+
+    console.log(
+      'URL de PostgreSQL configurada:',
+      Boolean(pgConfig.url)
+    );
+
+    console.log('Conectando a PostgreSQL...');
+    await sequelize.authenticate();
+
+    console.log('PostgreSQL conectado');
+
+    console.log('Sincronizando tablas...');
+    await sequelize.sync();
+
+    console.log('Tablas sincronizadas');
+
+    server.listen(port, '0.0.0.0', () => {
+      console.log(`Servidor escuchando en puerto ${port}`);
+    });
+
   } catch (error) {
-    console.error('Error al inicial el servidor: ', error);
+    console.error('Error al iniciar el servidor:', error);
     process.exit(1);
   }
 }
