@@ -9,13 +9,13 @@ async function create(req, res, next) {
 
         if (typeof password !== 'string' || password.length === 0) {
             return res.status(400).json({
-                message: req.__('users.passwordRequired')
+                message: 'Password is required'
             });
         }
 
         if (Buffer.byteLength(password, 'utf8') > 72) {
             return res.status(400).json({
-                message: req.__('users.passwordTooLong')
+                message: 'Password exceeds bcrypt limit'
             });
         }
 
@@ -31,7 +31,7 @@ async function create(req, res, next) {
         });
 
         res.status(201).json({
-            message: req.__('users.created'),
+            message: 'User created',
             data: user
         });
     } catch (err) {
@@ -50,7 +50,7 @@ async function list(req, res, next) {
         });
 
         res.json({
-            message: req.__('users.list'),
+            message: 'Users list',
             data: users
         });
 
@@ -73,12 +73,12 @@ async function find(req, res, next) {
 
         if (!user) {
             return res.status(404).json({
-                message: req.__('users.notFound')
+                message: 'User not found'
             });
         }
 
         res.json({
-            message: req.__('users.found'),
+            message: 'User by id',
             data: user
         });
 
@@ -97,7 +97,7 @@ async function update(req, res, next) {
 
         if (!user) {
             return res.status(404).json({
-                message: req.__('users.notFound')
+                message: 'User not found'
             });
         }
 
@@ -111,13 +111,13 @@ async function update(req, res, next) {
         if (password !== undefined) {
             if (typeof password !== 'string' || password.length === 0) {
                 return res.status(400).json({
-                    message: req.__('users.passwordRequired')
+                    message: 'Password is required'
                 });
             }
 
             if (Buffer.byteLength(password, 'utf8') > 72) {
                 return res.status(400).json({
-                    message: req.__('users.passwordTooLong')
+                    message: 'Password exceeds bcrypt limit'
                 });
             }
 
@@ -130,7 +130,7 @@ async function update(req, res, next) {
         await user.update(changes);
 
         res.json({
-            message: req.__('users.updated'),
+            message: 'User updated',
             data: user
         });
     } catch (err) {
@@ -147,14 +147,14 @@ async function destroy(req, res, next) {
 
         if (!user) {
             return res.status(404).json({
-                message: req.__('users.notFound')
+                message: 'User not found'
             });
         }
 
         await user.destroy();
 
         res.json({
-            message: req.__('users.deleted'),
+            message: 'User deleted',
             data: user
         });
 
