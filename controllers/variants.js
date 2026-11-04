@@ -13,7 +13,7 @@ async function create(req, res, next) {
             await transaction.rollback();
 
             return res.status(404).json({
-                message: 'Product not found',
+                message: req.__('variants.notFound'),
                 data: null
             });
         }
@@ -49,7 +49,7 @@ async function create(req, res, next) {
         });
 
         return res.status(201).json({
-            message: 'Product variant created',
+            message: req.__('variants.created'),
             data: createdVariant
         });
 
@@ -76,7 +76,7 @@ async function list(req, res, next) {
         });
 
         return res.json({
-            message: 'Product variants list',
+            message: req.__('variants.list'),
             data: variants
         });
 
@@ -105,13 +105,13 @@ async function find(req, res, next) {
 
         if (!variant) {
             return res.status(404).json({
-                message: 'Product variant not found',
+                message: req.__('variants.notFound'),
                 data: null
             });
         }
 
         return res.json({
-            message: 'Product variant found',
+            message: req.__('variants.found'),
             data: variant
         });
 
@@ -130,7 +130,7 @@ async function update(req, res, next) {
 
         if (!variant) {
             return res.status(404).json({
-                message: 'Product variant not found',
+                message: req.__('variants.notFound'),
                 data: null
             });
         }
@@ -143,7 +143,7 @@ async function update(req, res, next) {
 
             if (!product) {
                 return res.status(404).json({
-                    message: 'Product not found',
+                    message: req.__('variants.notFound'),
                     data: null
                 });
             }
@@ -165,7 +165,7 @@ async function update(req, res, next) {
         });
 
         return res.json({
-            message: 'Product variant updated',
+            message: req.__('variants.updated'),
             data: updatedVariant
         });
 
@@ -190,7 +190,7 @@ async function destroy(req, res, next) {
             await transaction.rollback();
 
             return res.status(404).json({
-                message: 'Product variant not found',
+                message: req.__('variants.notFound'),
                 data: null
             });
         }
@@ -210,7 +210,7 @@ async function destroy(req, res, next) {
         await transaction.commit();
 
         return res.json({
-            message: 'Product variant deleted',
+            message: req.__('variants.deleted'),
             data: variant
         });
 

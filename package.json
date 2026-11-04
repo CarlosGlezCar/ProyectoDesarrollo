@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "NODE_ENV=production node ./bin/www",
+    "start": "node ./bin/www",
     "lint": "eslint .",
     "dev": "NODE_ENV=development supervisor ./bin/www",
     "test": "jest --runInBand"

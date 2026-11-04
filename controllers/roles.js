@@ -5,7 +5,7 @@ async function create(req, res, next){
     try{
         const role = await Role.create(req.body);
         if(req.body.permissionIds) role.setpermissions(req.body.permissionIds);
-        res.status(201).json({message: 'Role created', data: role});
+        res.status(201).json({message: req.__('roles.created'), data: role});
     }   catch (err) {
         next(err);
     }
@@ -16,7 +16,7 @@ async function create(req, res, next){
 async function list(req, res, next) {
     const roles = await Role.findAll();
     res.json({
-        message: "Roles list",
+        message: req.__('roles.list'),
         data: roles
     });
 }
@@ -25,7 +25,7 @@ async function find(req, res, next){
     const id = req.params.id;
     const role = await Role.findByPk(id);
     res.json({
-        message: "Find role by id",
+        message: req.__('roles.found'),
         data: role
     });
 }
@@ -40,7 +40,7 @@ async function update(req, res, next) {
 
         if (!role) {
             return res.status(404).json({
-                message: 'Role not found'
+                message: req.__(req.__('roles.notFound'))
             });
         }
 
@@ -61,7 +61,7 @@ async function update(req, res, next) {
         });
 
         res.json({
-            message: 'Role updated',
+            message: req.__('roles.deleted'),
             data: updatedRole
         });
 

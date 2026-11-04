@@ -5,5 +5,14 @@
         "database": "stride_co",
         "user": "root",
         "password": "abcd1234"
+    },
+
+    "i18n": {
+        "defaultLocale": "es"
+    },
+    "jwt": {
+        "expiresIn": "15m",
+        "issuer": "stride-co",
+        "audience": "stride-co-api"
     }
 }

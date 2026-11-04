@@ -8,7 +8,7 @@ async function create(req, res, next){
     const permission = await Permission.create({key: key, description: description});
 
     res.status(201).json({
-        message: "Permission created",
+        message: req.__('permissions.created'),
         data: permission
     });
 }
@@ -17,7 +17,7 @@ async function create(req, res, next){
 async function list(req, res, next) {
     const permissions = await Permission.findAll();
     res.json({
-        message: "Permissions list",
+        message: req.__('permissions.list'),
         data: permissions
     });
 }
@@ -26,7 +26,7 @@ async function find(req, res, next){
     const id = req.params.id;
     const permission = await Permission.findByPk(id);
     res.json({
-        message: "Find permission by id",
+        message: req.__('permissions.found'),
         data: permission
     });
 }
@@ -37,7 +37,7 @@ async function update(req, res, next){
     const key = req.body.key;
     const description = req.body.description;
     const permission = await Permission.findByPk(id);
-    if(!permission) res.status(404).json({ message: 'Permission not found'});
+    if(!permission) res.status(404).json({ message: req.__('permissions.notFound')});
     let changes = {};
     changes.key = key ? key : permission.key;
     changes.description = description ? description : role.description;
@@ -45,7 +45,7 @@ async function update(req, res, next){
     await permission.update(changes);
 
     res.json({
-        message: "Permission update",
+        message: req.__('permissions.updated'),
         data: permission
     });
 }
@@ -54,10 +54,10 @@ async function update(req, res, next){
 async function destroy(req, res, next){
     const id = req.params.id;
     const permission = await Permission.findByPk(id);
-    if(!permission) res.status(404).json({ message: 'Permission not found'});
+    if(!permission) res.status(404).json({ message: req.__('permissions.notFound')});
     await permission.destroy();
     res.json({
-        message: "Permission delete",
+        message: req.__('permissions.deleted'),
         data: permission
     });
 }
