@@ -2,7 +2,6 @@
   "name": "stride-co",
   "version": "0.0.0",
   "private": true,
-  
   "scripts": {
     "start": "node ./bin/www",
     "dev": "supervisor ./bin/www",
