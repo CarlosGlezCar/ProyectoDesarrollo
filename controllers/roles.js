@@ -40,7 +40,7 @@ async function update(req, res, next) {
 
         if (!role) {
             return res.status(404).json({
-                message: req.__(req.__('roles.notFound'))
+                message: req.__(('roles.notFound'))
             });
         }
 
@@ -61,7 +61,7 @@ async function update(req, res, next) {
         });
 
         res.json({
-            message: req.__('roles.deleted'),
+            message: req.__('roles.updated'),
             data: updatedRole
         });
 

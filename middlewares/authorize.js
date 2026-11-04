@@ -79,7 +79,7 @@ function authorize(resource, action, possession) {
 
             if (!role) {
                 return res.status(403).json({
-                    message: ('common.forbidden')
+                    message: req.__('common.forbidden')
                 });
             }
 
