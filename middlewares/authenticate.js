@@ -1,13 +1,14 @@
 const { expressjwt } = require('express-jwt');
-const process = require('node:process');
 const { User } = require('../models/relationals');
+const config = require('config');
 
 const verifyToken = expressjwt({
-    secret: process.env.JWT_SECRET,
+    secret: config.get('jwt.secret'),
     algorithms: ['HS256'],
-    issuer: process.env.JWT_ISSUER,
-    audience: process.env.JWT_AUDIENCE
+    issuer: config.get('jwt.issuer'),
+    audience: config.get('jwt.audience')
 });
+
 
 function authenticate(req, res, next) {
     verifyToken(req, res, async (err) => {
