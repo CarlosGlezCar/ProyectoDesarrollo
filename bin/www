@@ -4,15 +4,30 @@
  * Module dependencies.
  */
 
+const config = require('config');
+
+if (
+  !config.has('jwt.secret') ||
+  !config.get('jwt.secret')
+) {
+  console.error(
+    'Error: falta jwt.secret en la configuración.'
+  );
+  process.exit(1);
+}
+
 const app = require('../app');
 const debug = require('debug')('stride-co:server');
 const http = require('http');
+const connectMongo = require('../config/mongoose');
+const {sequelize} = require('../models/relationals');
+
+
 
 /**
  * Get port from environment and store in Express.
  */
-
-const port = normalizePort(process.env.PORT || '3000');
+const port = config.get('server.port');
 app.set('port', port);
 
 /**
@@ -21,11 +36,27 @@ app.set('port', port);
 
 const server = http.createServer(app);
 
+async function start(){
+  try{
+
+  await connectMongo();
+  debug('Conexión a MongoDB generada correctamente.');
+
+  await sequelize.authenticate();
+  //Crear las tablas si es que no existen
+  await sequelize.sync();
+  debug('Conexión a mysql generada correctamente.');
+  server.listen(port);
+  } catch (error) {
+    console.error('Error al inicial el servidor: ', error);
+    process.exit(1);
+  }
+}
+
 /**
  * Listen on provided port, on all network interfaces.
  */
-
-server.listen(port);
+start();
 server.on('error', onError);
 server.on('listening', onListening);
 

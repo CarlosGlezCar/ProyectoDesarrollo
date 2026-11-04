@@ -3,6 +3,8 @@ const router = express.Router();
 
 const controller = require('../controllers/roles')
 
+router.post('/', controller.create);
+
 /* GET users and its roles. */
 router.get('/', controller.list);
 

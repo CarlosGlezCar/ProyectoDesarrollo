@@ -1,7 +1,8 @@
-const { json } = require("express");
-
-function home(req, res, next) {
-    res.render('index', { title: 'Express' });
+function home(req, res) {
+  return res.render('index', {
+    title: req.__('views.home.title'),
+    description: req.__('views.home.description')
+  });
 }
 
 function healthCheck(req, res){
@@ -10,4 +11,4 @@ function healthCheck(req, res){
     });
 }
 
-module.exports = {home, healthCheck};
+module.exports = { home, healthCheck };

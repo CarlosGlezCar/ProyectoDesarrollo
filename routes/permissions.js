@@ -3,6 +3,8 @@ const router = express.Router();
 
 const controller = require('../controllers/permissions')
 
+router.post('/', controller.create);
+
 /* GET users listing. */
 router.get('/', controller.list);
 

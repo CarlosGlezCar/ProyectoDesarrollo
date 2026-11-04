@@ -1,11 +1,16 @@
+require('dotenv').config();
+
 const createError = require('http-errors');
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
+const { expressjwt } = require('express-jwt');
+const i18n = require('./config/i18n');
 
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
+const authRouter = require('./routes/auth');
 const customersRouter = require('./routes/customers');
 const inventoryRouter = require('./routes/inventory');
 const ordersRouter = require('./routes/orders');
@@ -15,6 +20,9 @@ const rolesRouter = require('./routes/roles');
 const variantsRouter = require('./routes/variants');
 
 const app = express();
+
+const secret = "e890eb5d680cb1d28ddd72d674e92eff8c36732f";
+app.use(expressjwt({ secret, algorithms:["HS256"]}).unless({path:['/api/auth/login']})); //lo copie al cual como lo tiene el profe, puede que requiera cambio
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -28,9 +36,37 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(i18n.init);
+
+app.use((req, res, next) => {
+  const queryLang =
+    typeof req.query.lang === 'string'
+      ? req.query.lang
+      : null;
+
+  const headerLang = req.get('accept-language')
+    ?.split(',')[0];
+
+  const requested = queryLang ||
+    headerLang ||
+    'es';
+
+  const base = requested
+    .trim()
+    .toLowerCase()
+    .split('-')[0];
+
+  const locale = ['es', 'en'].includes(base)
+    ? base
+    : 'es';
+
+  i18n.setLocale(req, locale);
+  next();
+});
 
 app.use('/', indexRouter);
 app.use('/api/users', usersRouter);
+app.use('/api/auth', authRouter);
 app.use('/api/customers', customersRouter);
 app.use('/api/inventory', inventoryRouter);
 app.use('/api/orders', ordersRouter);
@@ -46,6 +82,11 @@ app.use(function(req, res, next) {
 
 // error handler
 app.use(function(err, req, res, next) {
+  if (err.name === 'UnauthorizedError') {
+    return res.status(401).json({
+        message: 'Unauthorized'
+    });
+  }
   const status = err.status || 500;
 
   if (req.originalUrl.startsWith('/api')) {
