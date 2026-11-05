@@ -1,4 +1,4 @@
-const { Product, ProductVariant, Inventory, sequelize } = require('../models/relationals');
+const { Product, ProductVariant, Inventory, sequelize } = require('../models/sql');
 
 async function create(req, res, next) {
   let transaction;

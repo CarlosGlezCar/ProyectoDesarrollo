@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { Customer } = require('../models/documents');
+const { Customer } = require('../models/mongo');
 
 function validId(req, res) {
   if (mongoose.isValidObjectId(req.params.id)) return true;

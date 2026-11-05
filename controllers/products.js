@@ -1,4 +1,4 @@
-const { Product, ProductVariant, Inventory } = require('../models/relationals');
+const { Product, ProductVariant, Inventory } = require('../models/sql');
 
 const variantsInclude = {
   model: ProductVariant,

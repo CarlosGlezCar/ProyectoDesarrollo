@@ -1,5 +1,5 @@
 const { expressjwt } = require('express-jwt');
-const { User } = require('../models/relationals');
+const { User } = require('../models/sql');
 const config = require('config');
 
 const verifyToken = expressjwt({

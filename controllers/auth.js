@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const config = require('config');
 const { Buffer } = require('node:buffer');
-const { User } = require('../models/relationals');
+const { User } = require('../models/sql');
 const { verifyPassword } = require('../utils/passwords');
 
 function safeUser(user) {
