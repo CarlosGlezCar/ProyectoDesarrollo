@@ -55,6 +55,13 @@ app.get(
   (req, res) => res.status(200).json({ message: 'Order authorized' })
 );
 
+app.get(
+  '/orders',
+  testAuthenticate,
+  authorize('orders', 'read', 'ownOrAny'),
+  (req, res) => res.status(200).json(req.ownershipFilter)
+);
+
 describe('RBAC authorization', () => {
   let rolePermissions;
 
@@ -75,6 +82,12 @@ describe('RBAC authorization', () => {
 
     Customer.findById.mockResolvedValue({
       userId: 101
+    });
+
+    Customer.find = jest.fn().mockReturnValue({
+      select: jest.fn().mockResolvedValue([
+      { _id: 'customer-1' }
+      ])
     });
   });
 
@@ -138,9 +151,9 @@ describe('RBAC authorization', () => {
     expect(response.status).toBe(403);
   });
 
-  test('USER without orders:read:any cannot read another users order', async () => {
+    test('USER without orders:read:any cannot read another users order', async () => {
     rolePermissions.set(3, [
-    { key: 'orders:read:own' }
+      { key: 'orders:read:own' }
     ]);
 
     Customer.findById.mockResolvedValue({
@@ -153,5 +166,40 @@ describe('RBAC authorization', () => {
       .set('x-role-id', '3');
 
     expect(response.status).toBe(403);
+  });
+
+  test('SALES with orders:read:any can read another users order', async () => {
+    rolePermissions.set(2, [
+      { key: 'orders:read:any' }
+    ]);
+
+    Customer.findById.mockResolvedValue({
+      userId: 202
+    });
+
+    const response = await request(app)
+      .get('/orders/order-4')
+      .set('x-user-id', '101')
+      .set('x-role-id', '2');
+
+    expect(response.status).toBe(200);
+  });
+
+    test('USER can only list their own orders', async () => {
+    rolePermissions.set(3, [
+      { key: 'orders:read:own' }
+    ]);
+
+    const response = await request(app)
+      .get('/orders')
+      .set('x-user-id', '101')
+      .set('x-role-id', '3');
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      customerId: {
+        $in: ['customer-1']
+      }
+    });
   });
 });

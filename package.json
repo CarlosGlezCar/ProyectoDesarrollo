@@ -6,6 +6,7 @@
     "start": "node ./bin/www",
     "dev": "supervisor ./bin/www",
     "lint": "eslint .",
+    "seed": "node scripts/seed.js",
     "test": "jest --runInBand --testPathIgnorePatterns=/test/e2e/"
   },
   "dependencies": {

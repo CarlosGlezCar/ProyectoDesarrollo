@@ -21,8 +21,13 @@ async function create(req, res, next) {
 
 async function list(req, res, next) {
   try {
-    const customers = await Customer.find();
-    return res.json({ message: req.__('customers.list'), data: customers });
+    const filter = req.ownershipFilter || {};
+    const customers = await Customer.find(filter);
+
+    return res.json({
+      message: req.__('customers.list'),
+      data: customers
+    });
   } catch (err) {
     return next(err);
   }
