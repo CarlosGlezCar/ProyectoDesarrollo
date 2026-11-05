@@ -9,5 +9,6 @@ router.post('/', authenticate, authorize('roles', 'create', 'any'), controller.c
 router.get('/', authenticate, authorize('roles', 'read', 'any'), controller.list);
 router.get('/:id', authenticate, authorize('roles', 'read', 'any'), controller.find);
 router.put('/:id', authenticate, authorize('roles', 'update', 'any'), controller.update);
+router.delete('/:id', authenticate, authorize('roles', 'delete', 'any'), controller.destroy);
 
 module.exports = router;

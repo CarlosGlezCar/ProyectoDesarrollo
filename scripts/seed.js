@@ -8,8 +8,8 @@ const {
     Product,
     ProductVariant,
     Inventory
-} = require('../models/relationals');
-const { Customer, Order } = require('../models/documents');
+} = require('../models/sql');
+const { Customer, Order } = require('../models/mongo');
 const { hashPassword } = require('../utils/passwords');
 
 const resources = [
@@ -100,12 +100,12 @@ async function createCustomer(user) {
             email: user.email,
             phone: '6141234567',
             addresses: [{
-                type: 'SHIPING',
+                type: 'shipping',
                 street: 'Avenida Principal',
                 number: '100',
                 city: 'Chihuahua',
                 state: 'Chihuahua',
-                zipCode: '31000',
+                postalCode: '31000',
                 country: 'México'
             }]
         });
@@ -248,14 +248,33 @@ async function seed() {
             });
 
             if (!existingOrder) {
-                await Order.create({
+                               await Order.create({
                     customerId: customer._id,
+                    salesPersonId: sales.id,
+                    paymentMethod: 'card',
                     totals: {
-                        subTotal: 1000,
-                        shiping: 100,
-                        discount: 0,
-                        total: 1100
-                    }
+                        subtotal: '1000.00',
+                        shipping: '100.00',
+                        discount: '0.00',
+                        total: '1100.00'
+                    },
+                    shippingAddress: {
+                        street: 'Avenida Principal',
+                        number: '100',
+                        city: 'Chihuahua',
+                        state: 'Chihuahua',
+                        postalCode: '31000',
+                        country: 'México'
+                    },
+                    items: [{
+                        productId: product.id,
+                        quantity: 1,
+                        unitPrice: '1000.00'
+                    }],
+                    statusHistory: [{
+                        status: 'pending',
+                        changedById: sales.id
+                    }]
                 });
             }
         }

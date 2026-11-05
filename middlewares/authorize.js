@@ -1,6 +1,6 @@
 const { AccessControl } = require('accesscontrol');
-const { Role, Permission } = require('../models/relationals');
-const { Order, Customer } = require('../models/documents');
+const { Role, Permission } = require('../models/sql');
+const { Order, Customer } = require('../models/mongo');
 
 function parsePermissionKey(key) {
   const parts = key.split(':');

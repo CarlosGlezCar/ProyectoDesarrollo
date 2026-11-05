@@ -1,14 +1,14 @@
 const express = require('express');
 const request = require('supertest');
 
-jest.mock('../models/relationals', () => ({
+jest.mock('../models/sql', () => ({
   Role: {
     findByPk: jest.fn()
   },
   Permission: {}
 }));
 
-jest.mock('../models/documents', () => ({
+jest.mock('../models/mongo', () => ({
   Order: {
     findById: jest.fn()
   },
@@ -17,8 +17,8 @@ jest.mock('../models/documents', () => ({
   }
 }));
 
-const { Role } = require('../models/relationals');
-const { Order, Customer } = require('../models/documents');
+const { Role } = require('../models/sql');
+const { Order, Customer } = require('../models/mongo');
 const authorize = require('../middlewares/authorize');
 
 // Simula un usuario autenticado para probar la autorización.

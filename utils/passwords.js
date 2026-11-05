@@ -1,11 +1,17 @@
 const bcrypt = require('bcrypt');
 const config = require('config');
+const { Buffer } = require('node:buffer');
 
 async function hashPassword(password) {
-    const saltRounds = Number(config.get('bcrypt.saltRounds'));
+    if (typeof password !== 'string' || !password
+        || Buffer.byteLength(password, 'utf8') > 72) {
+        throw new Error('La contraseña debe contener entre 1 y 72 bytes.');
+    }
+
+    const saltRounds = config.get('bcrypt.saltRounds');
 
     if (!Number.isInteger(saltRounds) || saltRounds < 4 || saltRounds > 31) {
-        throw new Error('bcrypt.saltRounds debe ser un entero entre 4 y 31');
+        throw new Error('bcrypt.saltRounds debe ser un entero entre 4 y 31.');
     }
 
     const salt_key = await bcrypt.genSalt(saltRounds);
@@ -15,11 +21,13 @@ async function hashPassword(password) {
 }
 
 async function verifyPassword(password, passwordHash) {
-    if (typeof password !== 'string' || typeof passwordHash !== 'string') {
+    if (typeof password !== 'string' || !password
+        || typeof passwordHash !== 'string'
+        || Buffer.byteLength(password, 'utf8') > 72) {
         return false;
     }
 
-    return await bcrypt.compare(password, passwordHash);
+    return bcrypt.compare(password, passwordHash);
 }
 
 module.exports = {
