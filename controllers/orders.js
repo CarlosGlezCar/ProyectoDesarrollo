@@ -21,7 +21,8 @@ async function create(req, res, next) {
 
 async function list(req, res, next) {
   try {
-    const orders = await Order.find().populate('customerId');
+    const filter = req.ownershipFilter || {};
+    const orders = await Order.find(filter).populate('customerId');
     return res.json({ message: req.__('orders.list'), data: orders });
   } catch (err) {
     return next(err);
@@ -46,6 +47,12 @@ async function find(req, res, next) {
 async function update(req, res, next) {
   if (!validId(req, res)) return;
   try {
+        if (req.body.customerId !== undefined) {
+      return res.status(400).json({
+        message: req.__('common.invalidInput'),
+        data: null
+      });
+    }
     const order = await Order.findByIdAndUpdate(
       req.params.id, req.body, { new: true, runValidators: true }
     );

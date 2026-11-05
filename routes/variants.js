@@ -1,21 +1,48 @@
 const express = require('express');
 const router = express.Router();
 
-const controller = require('../controllers/variants')
+const controller = require('../controllers/variants');
+const authenticate = require('../middlewares/authenticate');
+const authorize = require('../middlewares/authorize');
 
-/*POST user create*/
-router.post('/', controller.create);
+/* POST variant create */
+router.post(
+  '/',
+  authenticate,
+  authorize('variants', 'create', 'any'),
+  controller.create
+);
 
-/* GET users listing. */
-router.get('/', controller.list);
+/* GET variants listing */
+router.get(
+  '/',
+  authenticate,
+  authorize('variants', 'read', 'any'),
+  controller.list
+);
 
-/*GET user by id*/
-router.get('/:id', controller.find);
+/* GET variant by id */
+router.get(
+  '/:id',
+  authenticate,
+  authorize('variants', 'read', 'any'),
+  controller.find
+);
 
-/*PUT user to update*/
-router.put('/:id', controller.update);
+/* PUT variant to update */
+router.put(
+  '/:id',
+  authenticate,
+  authorize('variants', 'update', 'any'),
+  controller.update
+);
 
-/*DELETE user by id*/
-router.delete('/:id', controller.destroy);
+/* DELETE variant by id */
+router.delete(
+  '/:id',
+  authenticate,
+  authorize('variants', 'delete', 'any'),
+  controller.destroy
+);
 
 module.exports = router;
