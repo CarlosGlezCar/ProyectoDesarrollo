@@ -2,15 +2,61 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('../../config/sequelize');
 
 const User = sequelize.define('User', {
-    first_name: { type: DataTypes.STRING(100), allowNull: false },
-    last_name: { type: DataTypes.STRING(100), allowNull: false },
-    email: { type: DataTypes.STRING(150), allowNull: false, unique: true },
-    password_hash: { type: DataTypes.STRING(255), allowNull: false },
-    salt_key: { type: DataTypes.STRING(255), allowNull: false },
-    active: { type: DataTypes.BOOLEAN, defaultValue: true },
+    first_name: {
+        type: DataTypes.STRING(100),
+        allowNull: false,
+        validate: {
+            notEmpty: true,
+            len: [1, 100]
+        }
+    },
+    last_name: {
+        type: DataTypes.STRING(100),
+        allowNull: false,
+        validate: {
+            notEmpty: true,
+            len: [1, 100]
+        }
+    },
+    email: {
+        type: DataTypes.STRING(150),
+        allowNull: false,
+        unique: true,
+        validate: {
+            notEmpty: true,
+            isEmail: true,
+            len: [3, 150]
+        }
+    },
+    password_hash: {
+        type: DataTypes.STRING(255),
+        allowNull: false,
+        validate: {
+            notEmpty: true,
+            len: [1, 255]
+        }
+    },
+    salt_key: {
+        type: DataTypes.STRING(255),
+        allowNull: false,
+        validate: {
+            notEmpty: true,
+            len: [1, 255]
+        }
+    },
+    active: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: true
+    },
     role_id: {
         type: DataTypes.INTEGER,
-        allowNull: true,
+        allowNull: false,
+        validate: {
+            isInt: true,
+            min: 1,
+            max: 2147483647
+        },
         references: {
             model: 'roles',
             key: 'id'
@@ -18,7 +64,7 @@ const User = sequelize.define('User', {
     }
 }, {
     tableName: 'users',
-    timestamps: true // --> created_at y updated_at
+    timestamps: true
 });
 
 // Ocultar los datos de contraseña en las respuestas JSON.
