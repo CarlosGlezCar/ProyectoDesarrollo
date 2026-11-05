@@ -3,7 +3,6 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
-const { expressjwt } = require('express-jwt');
 const i18n = require('./config/i18n');
 const config = require('config');
 const errorHandler = require('./middlewares/error-handler');
@@ -41,15 +40,6 @@ app.use((req, res, next) => {
   i18n.setLocale(req, locale);
   next();
 });
-
-app.use(expressjwt({
-  secret: config.get('jwt.secret'),
-  algorithms: ['HS256'],
-  issuer: config.get('jwt.issuer'),
-  audience: config.get('jwt.audience')
-}).unless({
-  path: ['/', '/health', '/api/auth/login']
-}));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
