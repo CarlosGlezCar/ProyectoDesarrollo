@@ -1,11 +1,11 @@
 const bcrypt = require('bcrypt');
-const process = require('node:process');
+const config = require('config');
 
 async function hashPassword(password) {
-    const saltRounds = Number(process.env.BCRYPT_SALT_ROUNDS);
+    const saltRounds = Number(config.get('bcrypt.saltRounds'));
 
     if (!Number.isInteger(saltRounds) || saltRounds < 4 || saltRounds > 31) {
-        throw new Error('BCRYPT_SALT_ROUNDS debe ser un entero entre 4 y 31');
+        throw new Error('bcrypt.saltRounds debe ser un entero entre 4 y 31');
     }
 
     const salt_key = await bcrypt.genSalt(saltRounds);
