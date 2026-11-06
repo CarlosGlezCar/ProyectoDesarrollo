@@ -48,18 +48,28 @@ app.delete(
   (req, res) => res.status(204).end()
 );
 
+// READ: todas las órdenes
+app.get(
+  '/orders',
+  testAuthenticate,
+  authorize('orders', 'read', 'any'),
+  (req, res) => res.status(200).json(req.ownershipFilter)
+);
+
+// READ: órdenes propias
+app.get(
+  '/orders/own',
+  testAuthenticate,
+  authorize('orders', 'read', 'own'),
+  (req, res) => res.status(200).json(req.ownershipFilter)
+);
+
+// READ: orden individual
 app.get(
   '/orders/:id',
   testAuthenticate,
   authorize('orders', 'read', 'ownOrAny'),
   (req, res) => res.status(200).json({ message: 'Order authorized' })
-);
-
-app.get(
-  '/orders',
-  testAuthenticate,
-  authorize('orders', 'read', 'ownOrAny'),
-  (req, res) => res.status(200).json(req.ownershipFilter)
 );
 
 describe('RBAC authorization', () => {
@@ -191,7 +201,7 @@ describe('RBAC authorization', () => {
     ]);
 
     const response = await request(app)
-      .get('/orders')
+      .get('/orders/own')
       .set('x-user-id', '101')
       .set('x-role-id', '3');
 
@@ -201,5 +211,18 @@ describe('RBAC authorization', () => {
         $in: ['customer-1']
       }
     });
+  });
+
+  test('USER cannot list all orders without orders:read:any', async () => {
+  rolePermissions.set(3, [
+    { key: 'orders:read:own' }
+  ]);
+
+  const response = await request(app)
+    .get('/orders')
+    .set('x-user-id', '101')
+    .set('x-role-id', '3');
+
+  expect(response.status).toBe(403);
   });
 });

@@ -23,7 +23,8 @@ function authenticate(req, res, next) {
                 req.auth.sub.length === 0
             ) {
                 return res.status(401).json({
-                    message: req.__('common.unauthorized')
+                    message: req.__('common.unauthorized'),
+                    data: null
                 });
             }
 
@@ -31,7 +32,8 @@ function authenticate(req, res, next) {
 
             if (!user || !user.active) {
                 return res.status(401).json({
-                    message: req.__('common.unauthorized')
+                    message: req.__('common.unauthorized'),
+                    data: null
                 });
             }
 

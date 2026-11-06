@@ -13,11 +13,19 @@ router.post(
     controller.create
 );
 
-// READ: listado
+// READ: todas las órdenes
 router.get(
     '/',
     authenticate,
-    authorize('orders', 'read', 'ownOrAny'),
+    authorize('orders', 'read', 'any'),
+    controller.list
+);
+
+// READ: órdenes propias
+router.get(
+    '/own',
+    authenticate,
+    authorize('orders', 'read', 'own'),
     controller.list
 );
 
