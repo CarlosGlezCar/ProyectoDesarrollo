@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
-const { api, login, bearer, CREDENTIALS } = require('./helpers');
+const config = require('config');
+const { api, login, bearer, CREDENTIALS, isRemote } = require('./helpers');
 const es = require('../../locales/es.json');
 
 describe('Autenticación E2E (/api/auth)', () => {
@@ -117,6 +118,29 @@ describe('Autenticación E2E (/api/auth)', () => {
 
       expect(response.statusCode).toBe(401);
       expect(response.body.message).toBe(es.auth.invalidToken);
+    });
+
+    const testLocal = isRemote ? test.skip : test;
+
+    testLocal('con un token expirado responde 401 con el mensaje de auth.tokenExpired', async () => {
+      const expiredToken = jwt.sign(
+        { sub: '1' },
+        config.get('jwt.secret'),
+        {
+          algorithm: 'HS256',
+          expiresIn: '-10s',
+          issuer: config.get('jwt.issuer'),
+          audience: config.get('jwt.audience')
+        }
+      );
+
+      const response = await api()
+        .get('/api/auth/me')
+        .set('Accept-Language', 'es')
+        .set(bearer(expiredToken));
+
+      expect(response.statusCode).toBe(401);
+      expect(response.body.message).toBe(es.auth.tokenExpired);
     });
 
     test('con el token de ADMIN responde 200, devuelve el correo admin@strideco.test y no contiene password, password_hash ni salt_key', async () => {
