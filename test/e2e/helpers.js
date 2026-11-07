@@ -1,6 +1,7 @@
 const request = require('supertest');
 const config = require('config');
 const baseUrl = process.env.E2E_BASE_URL || config.get('e2e.baseUrl');
+const isRemote = Boolean(process.env.E2E_BASE_URL);
 
 const CREDENTIALS = {
   ADMIN: { email: 'admin@strideco.test', password: 'Admin123!' },
@@ -35,4 +36,4 @@ function bearer(token) {
   return { Authorization: `Bearer ${token}` };
 }
 
-module.exports = { api, login, bearer, CREDENTIALS, baseUrl };
+module.exports = { api, login, bearer, CREDENTIALS, baseUrl, isRemote };
