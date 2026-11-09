@@ -1,6 +1,6 @@
 {
     "jwt": {
-        "secret": "306Aa30525"
+        "secret": "CAMBIAR_ESTE_VALOR"
     },
     "database": {
         "postgres": {
