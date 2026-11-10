@@ -938,8 +938,8 @@ Cubren todos los recursos (usuarios, roles, permisos, productos, variantes, inve
 Resultado obtenido:
 
 ```text
-Test Suites: 14 passed, 14 total
-Tests:       289 passed, 289 total
+Test Suites: 15 passed, 15 total
+Tests:       293 passed, 293 total
 Snapshots:   0 total
 ```
 
