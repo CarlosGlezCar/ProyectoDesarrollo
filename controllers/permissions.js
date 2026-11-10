@@ -1,65 +1,128 @@
-const Permission = require('../models/relationals/Permission');
+const Permission = require('../models/sql/Permission');
+const { isSqlId, readBody, checkTypes } = require('../utils/validation');
 
-//CREATE
-async function create(req, res, next){
-    const key = req.body.key;
-    const description = req.body.description;
+const keyPattern = /^[a-z][a-z0-9_-]*:(create|read|update|delete):(own|any)$/;
 
-    const permission = await Permission.create({key: key, description: description});
+function readPermissionBody(body, creating = false) {
+  const fields = ['key', 'description'];
+  const data = readBody(body, fields, creating ? fields : []);
+  checkTypes(data, fields, 'string');
 
-    res.status(201).json({
-        message: "Permission created",
-        data: permission
-    });
+  if (Object.hasOwn(data, 'key')) data.key = data.key.trim();
+  if (Object.hasOwn(data, 'description')) {
+    data.description = data.description.trim();
+  }
+
+  return data;
 }
 
-//READ
+function validId(req, res) {
+  if (isSqlId(req.params.id)) return true;
+  res.status(400).json({
+    message: req.__('common.invalidId'), data: null
+  });
+  return false;
+}
+
+async function create(req, res, next) {
+  try {
+    const data = readPermissionBody(req.body, true);
+
+    if (!data.key) {
+      return res.status(400).json({
+        message: req.__('permissions.keyRequired'), data: null
+      });
+    }
+    if (!keyPattern.test(data.key)) {
+      return res.status(400).json({
+        message: req.__('permissions.invalidKey'), data: null
+      });
+    }
+
+    const permission = await Permission.create(data);
+    return res.status(201).json({
+      message: req.__('permissions.created'), data: permission
+    });
+  } catch (err) {
+    return next(err);
+  }
+}
+
 async function list(req, res, next) {
+  try {
     const permissions = await Permission.findAll();
-    res.json({
-        message: "Permissions list",
-        data: permissions
+    return res.json({
+      message: req.__('permissions.list'), data: permissions
     });
+  } catch (err) {
+    return next(err);
+  }
 }
 
-async function find(req, res, next){
-    const id = req.params.id;
-    const permission = await Permission.findByPk(id);
-    res.json({
-        message: "Find permission by id",
-        data: permission
+async function find(req, res, next) {
+  try {
+    if (!validId(req, res)) return;
+
+    const permission = await Permission.findByPk(Number(req.params.id));
+    if (!permission) {
+      return res.status(404).json({
+        message: req.__('permissions.notFound'), data: null
+      });
+    }
+
+    return res.json({
+      message: req.__('permissions.found'), data: permission
     });
+  } catch (err) {
+    return next(err);
+  }
 }
 
-//UPDATE
-async function update(req, res, next){
-    const id = req.params.id; 
-    const key = req.body.key;
-    const description = req.body.description;
-    const permission = await Permission.findByPk(id);
-    if(!permission) res.status(404).json({ message: 'Permission not found'});
-    let changes = {};
-    changes.key = key ? key : permission.key;
-    changes.description = description ? description : role.description;
+async function update(req, res, next) {
+  try {
+    if (!validId(req, res)) return;
+    const data = readPermissionBody(req.body);
 
-    await permission.update(changes);
+    if (Object.hasOwn(data, 'key') && !keyPattern.test(data.key)) {
+      return res.status(400).json({
+        message: req.__('permissions.invalidKey'), data: null
+      });
+    }
 
-    res.json({
-        message: "Permission update",
-        data: permission
+    const permission = await Permission.findByPk(Number(req.params.id));
+    if (!permission) {
+      return res.status(404).json({
+        message: req.__('permissions.notFound'), data: null
+      });
+    }
+
+    await permission.update(data);
+    return res.json({
+      message: req.__('permissions.updated'), data: permission
     });
+  } catch (err) {
+    return next(err);
+  }
 }
 
-//DELETE
-async function destroy(req, res, next){
-    const id = req.params.id;
-    const permission = await Permission.findByPk(id);
-    if(!permission) res.status(404).json({ message: 'Permission not found'});
+async function destroy(req, res, next) {
+  try {
+    if (!validId(req, res)) return;
+
+    const permission = await Permission.findByPk(Number(req.params.id));
+    if (!permission) {
+      return res.status(404).json({
+        message: req.__('permissions.notFound'), data: null
+      });
+    }
+
     await permission.destroy();
-    res.json({
-        message: "Permission delete",
-        data: permission
+    return res.json({
+      message: req.__('permissions.deleted'), data: permission
     });
+  } catch (err) {
+    return next(err);
+  }
 }
 
-module.exports = {list, find, update, destroy, create};
+module.exports = { list, find, update, destroy, create };

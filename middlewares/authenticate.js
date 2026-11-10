@@ -1,13 +1,14 @@
 const { expressjwt } = require('express-jwt');
-const process = require('node:process');
-const { User } = require('../models/relationals');
+const { User } = require('../models/sql');
+const config = require('config');
 
 const verifyToken = expressjwt({
-    secret: process.env.JWT_SECRET,
+    secret: config.get('jwt.secret'),
     algorithms: ['HS256'],
-    issuer: process.env.JWT_ISSUER,
-    audience: process.env.JWT_AUDIENCE
+    issuer: config.get('jwt.issuer'),
+    audience: config.get('jwt.audience')
 });
+
 
 function authenticate(req, res, next) {
     verifyToken(req, res, async (err) => {
@@ -22,7 +23,8 @@ function authenticate(req, res, next) {
                 req.auth.sub.length === 0
             ) {
                 return res.status(401).json({
-                    message: 'Unauthorized'
+                    message: req.__('common.unauthorized'),
+                    data: null
                 });
             }
 
@@ -30,7 +32,8 @@ function authenticate(req, res, next) {
 
             if (!user || !user.active) {
                 return res.status(401).json({
-                    message: 'Unauthorized'
+                    message: req.__('common.unauthorized'),
+                    data: null
                 });
             }
 

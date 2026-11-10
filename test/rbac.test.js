@@ -1,14 +1,14 @@
 const express = require('express');
 const request = require('supertest');
 
-jest.mock('../models/relationals', () => ({
+jest.mock('../models/sql', () => ({
   Role: {
     findByPk: jest.fn()
   },
   Permission: {}
 }));
 
-jest.mock('../models/documents', () => ({
+jest.mock('../models/mongo', () => ({
   Order: {
     findById: jest.fn()
   },
@@ -17,8 +17,8 @@ jest.mock('../models/documents', () => ({
   }
 }));
 
-const { Role } = require('../models/relationals');
-const { Order, Customer } = require('../models/documents');
+const { Role } = require('../models/sql');
+const { Order, Customer } = require('../models/mongo');
 const authorize = require('../middlewares/authorize');
 
 // Simula un usuario autenticado para probar la autorización.
@@ -48,6 +48,23 @@ app.delete(
   (req, res) => res.status(204).end()
 );
 
+// READ: todas las órdenes
+app.get(
+  '/orders',
+  testAuthenticate,
+  authorize('orders', 'read', 'any'),
+  (req, res) => res.status(200).json(req.ownershipFilter)
+);
+
+// READ: órdenes propias
+app.get(
+  '/orders/own',
+  testAuthenticate,
+  authorize('orders', 'read', 'own'),
+  (req, res) => res.status(200).json(req.ownershipFilter)
+);
+
+// READ: orden individual
 app.get(
   '/orders/:id',
   testAuthenticate,
@@ -75,6 +92,12 @@ describe('RBAC authorization', () => {
 
     Customer.findById.mockResolvedValue({
       userId: 101
+    });
+
+    Customer.find = jest.fn().mockReturnValue({
+      select: jest.fn().mockResolvedValue([
+      { _id: 'customer-1' }
+      ])
     });
   });
 
@@ -138,9 +161,9 @@ describe('RBAC authorization', () => {
     expect(response.status).toBe(403);
   });
 
-  test('USER without orders:read:any cannot read another users order', async () => {
+    test('USER without orders:read:any cannot read another users order', async () => {
     rolePermissions.set(3, [
-    { key: 'orders:read:own' }
+      { key: 'orders:read:own' }
     ]);
 
     Customer.findById.mockResolvedValue({
@@ -153,5 +176,53 @@ describe('RBAC authorization', () => {
       .set('x-role-id', '3');
 
     expect(response.status).toBe(403);
+  });
+
+  test('SALES with orders:read:any can read another users order', async () => {
+    rolePermissions.set(2, [
+      { key: 'orders:read:any' }
+    ]);
+
+    Customer.findById.mockResolvedValue({
+      userId: 202
+    });
+
+    const response = await request(app)
+      .get('/orders/order-4')
+      .set('x-user-id', '101')
+      .set('x-role-id', '2');
+
+    expect(response.status).toBe(200);
+  });
+
+    test('USER can only list their own orders', async () => {
+    rolePermissions.set(3, [
+      { key: 'orders:read:own' }
+    ]);
+
+    const response = await request(app)
+      .get('/orders/own')
+      .set('x-user-id', '101')
+      .set('x-role-id', '3');
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      customerId: {
+        $in: ['customer-1']
+      }
+    });
+  });
+
+  test('USER cannot list all orders without orders:read:any', async () => {
+  rolePermissions.set(3, [
+    { key: 'orders:read:own' }
+  ]);
+
+  const response = await request(app)
+    .get('/orders')
+    .set('x-user-id', '101')
+    .set('x-role-id', '3');
+
+  expect(response.status).toBe(403);
   });
 });

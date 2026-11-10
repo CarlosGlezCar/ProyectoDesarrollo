@@ -1,223 +1,177 @@
-const { Product, ProductVariant, Inventory, sequelize} = require('../models/relationals');
+const { Product, ProductVariant, Inventory, sequelize } = require('../models/sql');
+const { isSqlId, readBody, checkTypes, checkIds } = require('../utils/validation');
 
-//CREATE
+const variantIncludes = [
+  { model: Product, as: 'product' },
+  { model: Inventory, as: 'inventory' }
+];
+
+function readVariantBody(body, creating = false) {
+  const fields = ['productId', 'sku', 'size', 'color', 'active'];
+  const data = readBody(body, fields, creating ? ['productId', 'sku'] : []);
+
+  checkTypes(data, ['sku'], 'string');
+  checkTypes(data, ['active'], 'boolean');
+  checkIds(data, ['productId']);
+
+  for (const field of ['size', 'color']) {
+    if (Object.hasOwn(data, field) && data[field] !== null) {
+      checkTypes(data, [field], 'string');
+    }
+  }
+  for (const field of ['sku', 'size', 'color']) {
+    if (typeof data[field] === 'string') data[field] = data[field].trim();
+  }
+
+  return data;
+}
+
+function variantChanges(data) {
+  const changes = { ...data };
+  if (Object.hasOwn(changes, 'productId')) {
+    changes.product_id = changes.productId;
+    delete changes.productId;
+  }
+  return changes;
+}
+
+function validId(req, res) {
+  if (isSqlId(req.params.id)) return true;
+  res.status(400).json({
+    message: req.__('common.invalidId'), data: null
+  });
+  return false;
+}
+
 async function create(req, res, next) {
-    const transaction = await sequelize.transaction();
-    try {
-        const { productId, sku, size, color, active } = req.body;
-
-        // Verificar que exista el producto
-        const product = await Product.findByPk(productId);
-
-        if (!product) {
-            await transaction.rollback();
-
-            return res.status(404).json({
-                message: 'Product not found',
-                data: null
-            });
-        }
-
-        // Crear variante
-        const variant = await ProductVariant.create({
-            product_id: productId,
-            sku,
-            size,
-            color,
-            active
-        }, {
-            transaction
-        });
-
-        // Crear automáticamente su inventario
-        await Inventory.create({
-            variant_id: variant.id,
-            stock: 0,
-            reserved: 0
-        }, {
-            transaction
-        });
-
-        await transaction.commit();
-
-        // Recuperar variante junto con inventory
-        const createdVariant = await ProductVariant.findByPk(variant.id, {
-            include: {
-                model: Inventory,
-                as: 'inventory'
-            }
-        });
-
-        return res.status(201).json({
-            message: 'Product variant created',
-            data: createdVariant
-        });
-
-    } catch (err) {
-        await transaction.rollback();
-        next(err);
+  try {
+    const data = readVariantBody(req.body, true);
+    if (!data.sku) {
+      return res.status(400).json({
+        message: req.__('variants.skuRequired'), data: null
+      });
     }
+
+    const product = await Product.findByPk(data.productId);
+    if (!product) {
+      return res.status(404).json({
+        message: req.__('variants.productNotFound'), data: null
+      });
+    }
+
+    const created = await ProductVariant.create(variantChanges(data));
+    const variant = await created.reload({ include: variantIncludes });
+
+    return res.status(201).json({
+      message: req.__('variants.created'), data: variant
+    });
+  } catch (err) {
+    return next(err);
+  }
 }
 
-// READ ALL
 async function list(req, res, next) {
-    try {
-        const variants = await ProductVariant.findAll({
-            include: [
-                {
-                    model: Product,
-                    as: 'product'
-                },
-                {
-                    model: Inventory,
-                    as: 'inventory'
-                }
-            ]
-        });
-
-        return res.json({
-            message: 'Product variants list',
-            data: variants
-        });
-
-    } catch (err) {
-        next(err);
-    }
+  try {
+    const variants = await ProductVariant.findAll({
+      include: variantIncludes
+    });
+    return res.json({
+      message: req.__('variants.list'), data: variants
+    });
+  } catch (err) {
+    return next(err);
+  }
 }
 
-// READ BY ID
 async function find(req, res, next) {
-    try {
-        const id = req.params.id;
+  try {
+    if (!validId(req, res)) return;
 
-        const variant = await ProductVariant.findByPk(id, {
-            include: [
-                {
-                    model: Product,
-                    as: 'product'
-                },
-                {
-                    model: Inventory,
-                    as: 'inventory'
-                }
-            ]
-        });
-
-        if (!variant) {
-            return res.status(404).json({
-                message: 'Product variant not found',
-                data: null
-            });
-        }
-
-        return res.json({
-            message: 'Product variant found',
-            data: variant
-        });
-
-    } catch (err) {
-        next(err);
+    const variant = await ProductVariant.findByPk(Number(req.params.id), {
+      include: variantIncludes
+    });
+    if (!variant) {
+      return res.status(404).json({
+        message: req.__('variants.notFound'), data: null
+      });
     }
+    return res.json({
+      message: req.__('variants.found'), data: variant
+    });
+  } catch (err) {
+    return next(err);
+  }
 }
 
-
-// UPDATE
 async function update(req, res, next) {
-    try {
-        const id = req.params.id;
+  try {
+    if (!validId(req, res)) return;
+    const data = readVariantBody(req.body);
 
-        const variant = await ProductVariant.findByPk(id);
-
-        if (!variant) {
-            return res.status(404).json({
-                message: 'Product variant not found',
-                data: null
-            });
-        }
-
-        const { productId, sku, size, color, active } = req.body;
-
-        // Si quieren cambiar el producto, verificar que exista
-        if (productId !== undefined) {
-            const product = await Product.findByPk(productId);
-
-            if (!product) {
-                return res.status(404).json({
-                    message: 'Product not found',
-                    data: null
-                });
-            }
-        }
-
-        await variant.update({
-            product_id: productId ?? variant.product_id,
-            sku: sku ?? variant.sku,
-            size: size ?? variant.size,
-            color: color ?? variant.color,
-            active: active ?? variant.active
-        });
-
-        const updatedVariant = await ProductVariant.findByPk(id, {
-            include: {
-                model: Inventory,
-                as: 'inventory'
-            }
-        });
-
-        return res.json({
-            message: 'Product variant updated',
-            data: updatedVariant
-        });
-
-    } catch (err) {
-        next(err);
+    if (Object.hasOwn(data, 'sku') && !data.sku) {
+      return res.status(400).json({
+        message: req.__('variants.skuRequired'), data: null
+      });
     }
+
+    const result = await sequelize.transaction(async transaction => {
+      const variant = await ProductVariant.findByPk(Number(req.params.id), {
+        transaction,
+        lock: transaction.LOCK.UPDATE
+      });
+      if (!variant) return { error: 'variants.notFound' };
+
+      if (Object.hasOwn(data, 'productId')) {
+        const product = await Product.findByPk(data.productId, { transaction });
+        if (!product) return { error: 'variants.productNotFound' };
+      }
+
+      await variant.update(variantChanges(data), { transaction });
+      return {
+        variant: await variant.reload({
+          include: variantIncludes,
+          transaction
+        })
+      };
+    });
+
+    if (result.error) {
+      return res.status(404).json({
+        message: req.__(result.error), data: null
+      });
+    }
+    return res.json({
+      message: req.__('variants.updated'), data: result.variant
+    });
+  } catch (err) {
+    return next(err);
+  }
 }
 
-
-// DELETE
 async function destroy(req, res, next) {
-    const transaction = await sequelize.transaction();
+  try {
+    if (!validId(req, res)) return;
 
-    try {
-        const id = req.params.id;
+    const variant = await sequelize.transaction(async transaction => {
+      const found = await ProductVariant.findByPk(Number(req.params.id), { transaction });
+      if (!found) return null;
 
-        const variant = await ProductVariant.findByPk(id, {
-            transaction
-        });
+      await Inventory.destroy({ where: { variant_id: found.id }, transaction });
+      await found.destroy({ transaction });
+      return found;
+    });
 
-        if (!variant) {
-            await transaction.rollback();
-
-            return res.status(404).json({
-                message: 'Product variant not found',
-                data: null
-            });
-        }
-
-        // Eliminar primero su inventario
-        await Inventory.destroy({
-            where: {
-                variant_id: id
-            },
-            transaction
-        });
-
-        await variant.destroy({
-            transaction
-        });
-
-        await transaction.commit();
-
-        return res.json({
-            message: 'Product variant deleted',
-            data: variant
-        });
-
-    } catch (err) {
-        await transaction.rollback();
-        next(err);
+    if (!variant) {
+      return res.status(404).json({
+        message: req.__('variants.notFound'), data: null
+      });
     }
+    return res.json({
+      message: req.__('variants.deleted'), data: variant
+    });
+  } catch (err) {
+    return next(err);
+  }
 }
 
-module.exports = {list, create, find, update, destroy};
+module.exports = { list, create, find, update, destroy };

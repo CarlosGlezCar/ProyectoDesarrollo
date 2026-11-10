@@ -9,11 +9,27 @@ const authorize = require('../middlewares/authorize');
 router.post(
     '/',
     authenticate,
-    authorize('orders', 'create', 'any'),
+    authorize('orders', 'create', 'ownOrAny'),
     controller.create
 );
 
-// READ: permite lectura propia o general, según los permisos del rol
+// READ: todas las órdenes
+router.get(
+    '/',
+    authenticate,
+    authorize('orders', 'read', 'any'),
+    controller.list
+);
+
+// READ: órdenes propias
+router.get(
+    '/own',
+    authenticate,
+    authorize('orders', 'read', 'own'),
+    controller.list
+);
+
+// READ: orden individual
 router.get(
     '/:id',
     authenticate,
@@ -21,19 +37,19 @@ router.get(
     controller.find
 );
 
-// UPDATE: solo pedidos propios
+// UPDATE
 router.put(
     '/:id',
     authenticate,
-    authorize('orders', 'update', 'own'),
+    authorize('orders', 'update', 'ownOrAny'),
     controller.update
 );
 
-// DELETE: solo pedidos propios
+// DELETE
 router.delete(
     '/:id',
     authenticate,
-    authorize('orders', 'delete', 'own'),
+    authorize('orders', 'delete', 'ownOrAny'),
     controller.destroy
 );
 

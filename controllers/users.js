@@ -1,172 +1,175 @@
-const { User, Role } = require('../models/relationals');
+const { User, Role } = require('../models/sql');
 const { hashPassword } = require('../utils/passwords');
 const { Buffer } = require('node:buffer');
+const { isSqlId, readBody, checkTypes, checkIds } = require('../utils/validation');
 
-//* CREATE
+const allowedFields = ['name', 'lastName', 'email', 'roleId', 'password', 'active'];
+
+function readUserBody(body, creating = false) {
+  const required = creating ? ['name', 'lastName', 'email', 'roleId', 'password'] : [];
+  const data = readBody(body, allowedFields, required);
+  checkTypes(data, ['name', 'lastName', 'email'], 'string');
+  checkTypes(data, ['active'], 'boolean');
+  checkIds(data, ['roleId']);
+  return data;
+}
+
+function userChanges(data) {
+  const changes = {};
+  if (Object.hasOwn(data, 'name')) changes.first_name = data.name.trim();
+  if (Object.hasOwn(data, 'lastName')) changes.last_name = data.lastName.trim();
+  if (Object.hasOwn(data, 'email')) changes.email = data.email.trim();
+  if (Object.hasOwn(data, 'roleId')) changes.role_id = data.roleId;
+  if (Object.hasOwn(data, 'active')) changes.active = data.active;
+  return changes;
+}
+
+function validId(req, res) {
+  if (isSqlId(req.params.id)) return true;
+  res.status(400).json({ message: req.__('common.invalidId'), data: null });
+  return false;
+}
+
+function safeUser(user) {
+  if (!user) return null;
+  const data = typeof user.toJSON === 'function' ? user.toJSON() : { ...user };
+  delete data.password;
+  delete data.password_hash;
+  delete data.salt_key;
+  return data;
+}
+
+function passwordError(password, req) {
+  if (typeof password !== 'string' || !password) {
+    return req.__('users.passwordRequired');
+  }
+  if (Buffer.byteLength(password, 'utf8') > 72) {
+    return req.__('users.passwordTooLong');
+  }
+  return null;
+}
+
 async function create(req, res, next) {
-    try {
-        const { name, lastName, email, roleId, password } = req.body || {};
+  try {
+    const data = readUserBody(req.body, true);
+    const changes = userChanges(data);
+    const error = passwordError(data.password, req);
+    if (error) return res.status(400).json({ message: error, data: null });
 
-        if (typeof password !== 'string' || password.length === 0) {
-            return res.status(400).json({
-                message: 'Password is required'
-            });
-        }
-
-        if (Buffer.byteLength(password, 'utf8') > 72) {
-            return res.status(400).json({
-                message: 'Password exceeds bcrypt limit'
-            });
-        }
-
-        const { password_hash, salt_key } = await hashPassword(password);
-
-        const user = await User.create({
-            first_name: name,
-            last_name: lastName,
-            email: email,
-            role_id: roleId,
-            password_hash,
-            salt_key
-        });
-
-        res.status(201).json({
-            message: 'User created',
-            data: user
-        });
-    } catch (err) {
-        next(err);
+    if (!changes.email) {
+      return res.status(400).json({ message: req.__('users.emailRequired'), data: null });
     }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(changes.email)) {
+      return res.status(400).json({ message: req.__('users.invalidEmail'), data: null });
+    }
+    if (!(await Role.findByPk(data.roleId))) {
+      return res.status(400).json({ message: req.__('users.invalidRole'), data: null });
+    }
+
+    Object.assign(changes, await hashPassword(data.password));
+    const user = await User.create(changes);
+    return res.status(201).json({
+      message: req.__('users.created'),
+      data: safeUser(user)
+    });
+  } catch (err) {
+    return next(err);
+  }
 }
 
-//* READ ALL
 async function list(req, res, next) {
-    try {
-        const users = await User.findAll({
-            include: {
-                model: Role,
-                as: 'role'
-            }
-        });
-
-        res.json({
-            message: 'Users list',
-            data: users
-        });
-
-    } catch (err) {
-        next(err);
-    }
+  try {
+    const users = await User.findAll({
+      include: { model: Role, as: 'role' }
+    });
+    return res.json({
+      message: req.__('users.list'),
+      data: users.map(safeUser)
+    });
+  } catch (err) {
+    return next(err);
+  }
 }
 
-//* READ BY ID
 async function find(req, res, next) {
-    try {
-        const id = req.params.id;
-
-        const user = await User.findByPk(id, {
-            include: {
-                model: Role,
-                as: 'role'
-            }
-        });
-
-        if (!user) {
-            return res.status(404).json({
-                message: 'User not found'
-            });
-        }
-
-        res.json({
-            message: 'User by id',
-            data: user
-        });
-
-    } catch (err) {
-        next(err);
+  try {
+    if (!validId(req, res)) return;
+    const user = await User.findByPk(Number(req.params.id), {
+      include: { model: Role, as: 'role' }
+    });
+    if (!user) {
+      return res.status(404).json({
+        message: req.__('users.notFound'), data: null
+      });
     }
+    return res.json({
+      message: req.__('users.found'),
+      data: safeUser(user)
+    });
+  } catch (err) {
+    return next(err);
+  }
 }
 
-//* UPDATE
 async function update(req, res, next) {
-    try {
-        const id = req.params.id;
-        const { name, lastName, email, roleId, password } = req.body || {};
+  try {
+    if (!validId(req, res)) return;
+    const data = readUserBody(req.body);
+    const changes = userChanges(data);
 
-        const user = await User.findByPk(id);
-
-        if (!user) {
-            return res.status(404).json({
-                message: 'User not found'
-            });
-        }
-
-        const changes = {
-            first_name: name ?? user.first_name,
-            last_name: lastName ?? user.last_name,
-            email: email ?? user.email,
-            role_id: roleId ?? user.role_id
-        };
-
-        if (password !== undefined) {
-            if (typeof password !== 'string' || password.length === 0) {
-                return res.status(400).json({
-                    message: 'Password is required'
-                });
-            }
-
-            if (Buffer.byteLength(password, 'utf8') > 72) {
-                return res.status(400).json({
-                    message: 'Password exceeds bcrypt limit'
-                });
-            }
-
-            const { password_hash, salt_key } = await hashPassword(password);
-
-            changes.password_hash = password_hash;
-            changes.salt_key = salt_key;
-        }
-
-        await user.update(changes);
-
-        res.json({
-            message: 'User updated',
-            data: user
-        });
-    } catch (err) {
-        next(err);
+    if (Object.hasOwn(data, 'email') &&
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(changes.email)) {
+      return res.status(400).json({
+        message: req.__('users.invalidEmail'), data: null
+      });
     }
+    if (Object.hasOwn(data, 'password')) {
+      const error = passwordError(data.password, req);
+      if (error) return res.status(400).json({ message: error, data: null });
+    }
+
+    const user = await User.findByPk(Number(req.params.id));
+    if (!user) {
+      return res.status(404).json({
+        message: req.__('users.notFound'), data: null
+      });
+    }
+    if (Object.hasOwn(data, 'roleId') && !(await Role.findByPk(data.roleId))) {
+      return res.status(400).json({
+        message: req.__('users.invalidRole'), data: null
+      });
+    }
+    if (Object.hasOwn(data, 'password')) {
+      Object.assign(changes, await hashPassword(data.password));
+    }
+
+    await user.update(changes);
+    return res.json({
+      message: req.__('users.updated'),
+      data: safeUser(user)
+    });
+  } catch (err) {
+    return next(err);
+  }
 }
 
-//* DELETE
 async function destroy(req, res, next) {
-    try {
-        const id = req.params.id;
-
-        const user = await User.findByPk(id);
-
-        if (!user) {
-            return res.status(404).json({
-                message: 'User not found'
-            });
-        }
-
-        await user.destroy();
-
-        res.json({
-            message: 'User deleted',
-            data: user
-        });
-
-    } catch (err) {
-        next(err);
+  try {
+    if (!validId(req, res)) return;
+    const user = await User.findByPk(Number(req.params.id));
+    if (!user) {
+      return res.status(404).json({
+        message: req.__('users.notFound'), data: null
+      });
     }
+    await user.destroy();
+    return res.json({
+      message: req.__('users.deleted'),
+      data: safeUser(user)
+    });
+  } catch (err) {
+    return next(err);
+  }
 }
 
-module.exports = {
-    list,
-    create,
-    find,
-    update,
-    destroy
-};
+module.exports = { list, create, find, update, destroy };

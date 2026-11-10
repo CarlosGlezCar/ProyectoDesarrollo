@@ -1,0 +1,13 @@
+{
+    "jwt": {
+        "secret": "CAMBIAR_ESTE_VALOR"
+    },
+    "database": {
+        "postgres": {
+        "password": "REEMPLAZAR_CON_CONTRASENA"
+        },
+        "mongo": {
+        "uri": "mongodb://127.0.0.1:27017/stride_co"
+        }
+    }
+}
