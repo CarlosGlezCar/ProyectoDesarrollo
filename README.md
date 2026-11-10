@@ -10,7 +10,7 @@
 
 **Health Check:** https://proyectodesarrollo-1.onrender.com/health
 
-> **Estado del proyecto:** se confirmó la conexión a PostgreSQL y MongoDB Atlas, la ejecución del seed, el inicio de sesión con JWT, controles básicos de RBAC, internacionalización en español e inglés y 16 pruebas locales aprobadas. Queda pendiente integrar y ejecutar las pruebas E2E del equipo y agregar sus evidencias.
+> **Estado del proyecto:** se confirmó la conexión a PostgreSQL y MongoDB Atlas, la ejecución del seed, el inicio de sesión con JWT, controles básicos de RBAC, internacionalización en español e inglés y 16 pruebas locales aprobadas.
 
 ---
 
@@ -48,6 +48,7 @@ El sistema utiliza autenticación mediante JSON Web Tokens (JWT), control de acc
 | Contenedores | Docker |
 | Despliegue | Render |
 | Control de versiones | Git y GitHub |
+| Pruebas | Jest, Supertest, Google Antigravity |
 
 ---
 
@@ -630,7 +631,7 @@ Respuesta:
 
 Estas pruebas confirman el funcionamiento básico de autenticación y autorización en producción.
 
-La cobertura completa de permisos y operaciones CRUD deberá comprobarse mediante las pruebas E2E.
+La cobertura completa de permisos y operaciones CRUD se comprueba mediante la suite E2E (rbac.e2e.test.js, con los cinco escenarios de rol)
 
 ---
 
@@ -650,6 +651,7 @@ locales/
 ├── es.json
 └── en.json
 ```
+También hay una suite E2E (i18n.e2e.test.js) que prueba es, en, es-MX, fr y la prioridad de ?lang.
 
 ### Selección de idioma
 
@@ -840,7 +842,7 @@ Los usuarios son ficticios y se utilizan exclusivamente para comprobar el sistem
 | SALES | `ventas@strideco.test` | `Ventas123!` |
 | USER | `usuario@strideco.test` | `Usuario123!` |
 
-Se comprobó el inicio de sesión de ADMIN y SALES contra Render. La cuenta USER está definida en el seed, pero su inicio de sesión aún debe verificarse.
+Se comprobó el inicio de sesión de ADMIN y SALES contra Render. La cuenta USER está definida en el seed, el login de USER ya lo cubre la E2E contra Render.
 
 Estas contraseñas son exclusivamente de demostración y no deben reutilizarse en servicios personales.
 
@@ -916,82 +918,90 @@ eslint .
 
 El comando terminó sin errores.
 
-### 9.2. Pruebas con Jest
+### 9.2. Pruebas con Jest (mocks)
 
 ```bash
 npm test
 ```
 
+Estas pruebas **no necesitan bases de datos ni secretos**: los modelos de Sequelize y Mongoose se sustituyen con mocks (`jest.spyOn`) y la sesión se simula con los helpers de `test/helpers/`. Excluyen `test/e2e/`, que se ejecuta aparte (sección 9.3).
+
+Cubren todos los recursos (usuarios, roles, permisos, productos, variantes, inventario, clientes y órdenes) y los casos transversales:
+
+- Autenticación: token ausente, inválido y expirado.
+- Autorización RBAC por rol y alcance (`own` y `any`).
+- Validaciones (400) y recursos inexistentes (404).
+- Que no se devuelvan contraseñas ni hashes.
+- Internacionalización en español e inglés, y paridad de `es.json` y `en.json`.
+- Configuración.
+
 Resultado obtenido:
 
 ```text
-PASS test/users.test.js
-PASS test/i18n-paridad.test.js
-PASS test/rbac.test.js
-
-Test Suites: 3 passed, 3 total
-Tests:       16 passed, 16 total
+Test Suites: 15 passed, 15 total
+Tests:       293 passed, 293 total
 Snapshots:   0 total
 ```
 
-Las pruebas verifican autenticación básica, respuestas de error, permisos RBAC y paridad de traducciones.
+Para ejecutar un solo archivo:
 
-Estas pruebas no sustituyen las pruebas E2E del CRUD completo.
+```bash
+npx jest --runInBand test/roles.test.js
+```
 
 ### 9.3. Pruebas E2E
 
-El Entregable 2 requiere una suite de pruebas end-to-end utilizando Jest y Supertest.
-
-Estas pruebas deben verificar:
-
-- Health Check.
-- Inicio de sesión.
-- Autenticación JWT.
-- Autorización RBAC.
-- Operaciones CRUD.
-- Validaciones.
-- Relaciones entre modelos.
-- Internacionalización.
-- Respuestas de error.
-- Protección de datos sensibles.
-
-Las pruebas E2E deben utilizar las bases de datos reales y limpiar los registros que creen.
-
-**Estado: pendiente de integración por el integrante responsable.**
-
-La estructura esperada es:
+Las pruebas end-to-end usan Jest y Supertest contra una API en ejecución y sus bases de datos reales. Crean datos con el prefijo `E2E` y los eliminan al terminar.
 
 ```text
-test/
-└── e2e/
-    ├── helpers.js
-    ├── health.e2e.test.js
-    ├── auth.e2e.test.js
-    ├── rbac.e2e.test.js
-    ├── i18n.e2e.test.js
-    ├── users.e2e.test.js
-    ├── roles.e2e.test.js
-    ├── permissions.e2e.test.js
-    ├── products.e2e.test.js
-    ├── variants.e2e.test.js
-    ├── inventory.e2e.test.js
-    ├── customers.e2e.test.js
-    └── orders.e2e.test.js
+test/e2e/
+├── setup-env.js
+├── helpers.js
+├── health.e2e.test.js
+├── auth.e2e.test.js
+├── rbac.e2e.test.js
+├── i18n.e2e.test.js
+├── users.e2e.test.js
+├── roles.e2e.test.js
+├── permissions.e2e.test.js
+├── products.e2e.test.js
+├── variants.e2e.test.js
+├── inventory.e2e.test.js
+├── customers.e2e.test.js
+└── orders.e2e.test.js
 ```
 
-Una vez incorporado el script correspondiente en `package.json`, las pruebas se ejecutarán mediante:
+**Cobertura:** ciclo CRUD hasta 404, login, token ausente, inválido y expirado, los cinco escenarios RBAC, relaciones entre modelos, errores 400, ausencia de datos sensibles y respuestas en `es` y `en`.
+
+**Ejecución local** (con la API encendida con `npm start`):
 
 ```bash
 npm run test:e2e
 ```
 
-Para ejecutarlas contra Render desde Git Bash:
+**Ejecución contra Render.** La URL se toma de `e2e.baseUrl` en `config/default.json`, o de la variable `E2E_BASE_URL`, que solo usa el runner E2E.
+
+Git Bash:
 
 ```bash
 E2E_BASE_URL=https://proyectodesarrollo-1.onrender.com npm run test:e2e
 ```
 
-Antes de utilizar esta suite contra producción se debe comprobar que trabaje únicamente con datos ficticios y que los elimine después.
+PowerShell:
+
+```powershell
+$env:E2E_BASE_URL="https://proyectodesarrollo-1.onrender.com"; npm run test:e2e
+```
+
+La prueba del token expirado necesita el mismo secreto JWT que la API, por lo que se omite contra Render (aparece como 1 prueba omitida).
+
+La primera solicitud a Render puede tardar por la suspensión del plan gratuito; el runner usa un timeout de 60 s.
+
+**Resultado contra Render:**
+
+![E2E contra Render](docs/img/image.png)
+
+**Diferencia con `npm test`:** `npm test` corre solo las pruebas con mocks y no requiere bases de datos ni secretos. Las E2E son independientes y se ejecutan con `npm run test:e2e`.
 
 ### Evidencia de Antigravity
 
@@ -1089,16 +1099,15 @@ PostgreSQL gratuito tiene una vigencia limitada, por lo que se debe revisar su e
 - [x] `npm test` con 16 pruebas correctas.
 - [x] Documentación de PostgreSQL y MongoDB Atlas.
 - [x] Documentación de la URL pública de Render.
+- [x] Integración de la suite de pruebas E2E.
+- [x] Incorporación del comando `npm run test:e2e`.
+- [x] Documentación de Antigravity en `docs/e2e-antigravity.md`.
+- [x] Captura de las pruebas E2E ejecutadas contra Render.
+- [x] Verificación del login del usuario USER.
+- [x] Verificación completa del CRUD y sus validaciones.
+- [x] Revisión final de secretos y vigencia de PostgreSQL.
 
 ### Actividades pendientes de comprobación
-
-- [ ] Integración de la suite de pruebas E2E.
-- [ ] Incorporación del comando `npm run test:e2e`.
-- [ ] Documentación de Antigravity en `docs/e2e-antigravity.md`.
-- [ ] Captura de las pruebas E2E ejecutadas contra Render.
-- [ ] Verificación del login del usuario USER.
-- [ ] Verificación completa del CRUD y sus validaciones.
-- [ ] Revisión final de secretos y vigencia de PostgreSQL.
 
 ---
 
