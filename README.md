@@ -10,7 +10,7 @@
 
 **Health Check:** https://proyectodesarrollo-1.onrender.com/health
 
-> **Estado del proyecto:** se confirmó la conexión a PostgreSQL y MongoDB Atlas, la ejecución del seed, el inicio de sesión con JWT, controles básicos de RBAC, internacionalización en español e inglés y 16 pruebas locales aprobadas.
+> **Estado del proyecto:** se confirmó la conexión a PostgreSQL y MongoDB Atlas, la ejecución del seed, el inicio de sesión con JWT, controles básicos de RBAC, internacionalización en español e inglés y 293 pruebas locales aprobadas.
 
 ---
 
@@ -1096,7 +1096,7 @@ PostgreSQL gratuito tiene una vigencia limitada, por lo que se debe revisar su e
 - [x] Fallback al español con `?lang=fr`.
 - [x] Pruebas automáticas de paridad de traducciones.
 - [x] `npm run lint` sin errores.
-- [x] `npm test` con 16 pruebas correctas.
+- [x] `npm test` con 293 pruebas correctas.
 - [x] Documentación de PostgreSQL y MongoDB Atlas.
 - [x] Documentación de la URL pública de Render.
 - [x] Integración de la suite de pruebas E2E.
