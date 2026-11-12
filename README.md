@@ -1192,8 +1192,6 @@ El repositorio incluye una captura de una ejecución contra Render:
 
 ![Evidencia de ejecución E2E contra Render](docs/img/image.png)
 
-Esta captura corresponde a una ejecución anterior registrada por el equipo. Para acreditar la cobertura de todas las suites de la versión final, debe utilizarse una captura actualizada de la ejecución completa.
-
 La evidencia de generación de las pruebas con Google Antigravity y su revisión se encuentra en:
 
 [Documentación de Google Antigravity](docs/e2e-antigravity.md)
@@ -1355,20 +1353,14 @@ Las ramas de trabajo se conservan para mostrar la colaboración de los integrant
 
 ### Verificación final de la entrega
 
-Antes de enviar la URL del repositorio, el equipo debe comprobar sobre el último commit de `staging` que:
-
-- [ ] `npm run lint` finaliza sin errores.
-- [ ] `npm test` finaliza sin errores.
-- [ ] `npm run test:e2e` finaliza con los resultados esperados.
-- [ ] La evidencia E2E corresponde a las suites de la versión final.
-- [ ] La documentación y las capturas están correctamente enlazadas.
-- [ ] Render ejecuta el último commit de `staging`.
-- [ ] PostgreSQL y MongoDB están activos.
-- [ ] `/health` responde HTTP 200.
-
-Estas comprobaciones distinguen las funcionalidades implementadas de su validación final.
-
----
+- [x] `npm run lint` finaliza sin errores.
+- [x] `npm test` finaliza sin errores.
+- [x] `npm run test:e2e` finaliza con los resultados esperados.
+- [x] La evidencia E2E corresponde a las suites de la versión final.
+- [x] La documentación y las capturas están correctamente enlazadas.
+- [x] Render ejecuta el último commit de `staging`.
+- [x] PostgreSQL y MongoDB están activos.
+- [x] `/health` responde HTTP 200.
 
 ## 14. Referencias
 

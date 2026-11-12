@@ -6,7 +6,7 @@
 - Regla: el agente solo escribe el código de las pruebas; el equipo revisa cada archivo antes del commit.
 
 ### Captura de la sesión
-![Sesión de Antigravity con la cuenta UACH](![alt text](login-in-antigravity.png))
+![Sesión de Antigravity con la cuenta UACH](login-in-antigravity.png)
 
 ### Prompt 1:
 **Prompt:**
