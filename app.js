@@ -8,21 +8,22 @@ const logger = require('morgan');
 const { expressjwt } = require('express-jwt');
 const i18n = require('./config/i18n');
 
-const indexRouter = require('./routes/index');
-const usersRouter = require('./routes/users');
-const authRouter = require('./routes/auth');
-const customersRouter = require('./routes/customers');
-const inventoryRouter = require('./routes/inventory');
-const ordersRouter = require('./routes/orders');
-const permissionsRouter = require('./routes/permissions');
-const productsRouter = require('./routes/products');
-const rolesRouter = require('./routes/roles');
-const variantsRouter = require('./routes/variants');
+const indexRouter = require('./routes/api/index');
+const usersRouter = require('./routes/api/users');
+const authRouter = require('./routes/api/auth');
+const customersRouter = require('./routes/api/customers');
+const inventoryRouter = require('./routes/api/inventory');
+const ordersRouter = require('./routes/api/orders');
+const permissionsRouter = require('./routes/api/permissions');
+const productsRouter = require('./routes/api/products');
+const rolesRouter = require('./routes/api/roles');
+const variantsRouter = require('./routes/api/variants');
+const indexWebRouter = require('./routes/web/index');
 
 const app = express();
 
 const secret = "e890eb5d680cb1d28ddd72d674e92eff8c36732f";
-app.use(expressjwt({ secret, algorithms:["HS256"]}).unless({path:['/api/auth/login']})); //lo copie al cual como lo tiene el profe, puede que requiera cambio
+//app.use(expressjwt({ secret, algorithms:["HS256"]}).unless({path:['/api/auth/login']})); //lo copie al cual como lo tiene el profe, puede que requiera cambio
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -38,7 +39,8 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(i18n.init);
 
-app.use('/', indexRouter);
+app.use('/', indexWebRouter);
+app.use('/health', indexRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/customers', customersRouter);

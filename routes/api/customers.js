@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
 
-const controller = require('../controllers/permissions')
+const controller = require('../../controllers/customers')
 
+/*POST user create*/
 router.post('/', controller.create);
 
 /* GET users listing. */

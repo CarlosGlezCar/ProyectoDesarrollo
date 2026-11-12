@@ -70,7 +70,7 @@ async function login(req, res, next) {
         res.json({
             message: "Login successful",
             data:{
-                token: signToken(user),
+                token: token,
                 tokenType: "Bearer",
                 expiresIn: "15m"
             }

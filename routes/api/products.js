@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 
-const controller = require('../controllers/products');
-const authenticate = require('../middlewares/authenticate');
-const authorize = require('../middlewares/authorize');
+const controller = require('../../controllers/products');
+const authenticate = require('../../middlewares/authenticate');
+const authorize = require('../../middlewares/authorize');
 
 // CREATE
 router.post(

@@ -1,7 +1,9 @@
 const { json } = require("express");
+const { Product } = require('../models/relationals');
 
-function home(req, res, next) {
-    res.render('index', { title: 'Express' });
+async function home(req, res) {
+    const products = await Product.findAll();
+    res.render('index', { title: 'Stride-co', products: products});
 }
 
 function healthCheck(req, res){
