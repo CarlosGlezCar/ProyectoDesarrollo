@@ -1,5 +1,10 @@
 {
-    "auth": {
-        "invalidCredentials": "Credenciales Inválidas"
-    }
+	"auth": {
+		"invalidCredentials": "Credenciales Inválidas"
+	},
+	"products": {
+		"list": "products.list",
+        "created": "products.created",
+        "name": "Nombre"
+	}
 }
