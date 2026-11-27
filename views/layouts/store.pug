@@ -1,0 +1,59 @@
+extends base
+
+block body
+
+  header.store-header
+    .container.py-2.d-flex.justify-content-between.align-items-center.gap-3
+
+      a.brand(href="/")
+        | STRIDE
+        span -CO
+        small.d-block.fw-normal.text-secondary(style="font-size:.59rem;letter-spacing:2px")
+          | MOVE YOUR WAY
+
+      nav.store-nav.d-flex.align-items-center
+
+        a(href="/")
+          = __('ssr.nav.home')
+
+        a(href="/products")
+          = __('ssr.nav.products')
+
+        a.nav-link(href='/cart')
+          i.bi.bi-bag.me-1
+          = __('ssr.nav.cart')
+
+        a.nav-link(href='/my/orders')
+          i.bi.bi-receipt.me-1
+          = __('ssr.nav.myOrders')
+
+      include ../partials/language
+      .d-flex.align-items-center.gap-2
+
+        a.btn.btn-outline-dark.btn-sm(href="/admin")
+          i.bi.bi-shield-lock.me-1
+          = __('ssr.nav.admin')
+
+        if currentUser
+
+          span.pill= currentUser.first_name
+
+          form(method="POST" action="/logout")
+            button.btn.btn-outline-dark.btn-sm(type="submit")
+              = __('ssr.nav.logout')
+
+        else
+
+          a.btn.btn-dark.btn-sm(href="/login")
+            = __('ssr.nav.login')
+
+  main
+    include ../partials/flash
+
+    block content
+
+  footer.shop-footer.py-5
+    .container.d-flex.justify-content-between.flex-wrap.gap-2
+      strong.fs-4 STRIDE-CO
+      div= __('ssr.footer.links')
+      small= __('ssr.footer.copyright')

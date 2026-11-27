@@ -1,0 +1,11 @@
+mixin dataTable(headers)
+  .table-responsive
+    table.table.table-hover.align-middle.mb-0
+
+      thead.table-light
+        tr
+          each header in headers
+            th(scope="col")= header
+
+      tbody
+        block

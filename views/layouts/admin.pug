@@ -1,0 +1,87 @@
+extends base
+
+block body
+
+  .admin-shell
+
+    aside.admin-sidebar
+
+      a.brand.text-white.px-3.mb-3.d-block(href="/")
+        | STRIDE
+        span -CO
+
+      .sidebar-label.text-uppercase.tiny.px-3.mb-3
+        = __('ssr.admin.panel')
+
+      nav.nav.flex-column
+
+        if can('products', 'read', 'any') && can('orders', 'read', 'any')
+          a.nav-link(href="/admin")
+            i.bi.bi-speedometer2.me-2
+            = __('ssr.admin.dashboard')
+
+        if can('products', 'read', 'any')
+          a.nav-link(href="/admin/products")
+            i.bi.bi-box-seam.me-2
+            = __('ssr.nav.products')
+        
+        if can('variants', 'read', 'any')
+          a.nav-link(href="/admin/variants")
+            i.bi.bi-layers.me-2
+            = __('ssr.nav.variants')
+
+        if can('inventory', 'read', 'any')
+          a.nav-link(href="/admin/inventory")
+            i.bi.bi-stack.me-2
+            = __('ssr.nav.inventory')
+        
+        if can('orders', 'read', 'any')
+          a.nav-link(href="/admin/orders")
+            i.bi.bi-receipt.me-2
+            = __('ssr.nav.orders')
+
+        if can('customers', 'read', 'any')
+          a.nav-link(href="/admin/customers")
+            i.bi.bi-people.me-2
+            = __('ssr.nav.customers')
+
+        if can('users', 'read', 'any')
+          a.nav-link(href="/admin/users")
+            i.bi.bi-person-gear.me-2
+            = __('ssr.nav.users')
+
+        if can('roles', 'read', 'any')
+          a.nav-link(href="/admin/roles")
+            i.bi.bi-shield-lock.me-2
+            = __('ssr.nav.roles')
+            
+      .mt-4.px-2
+        a.btn.btn-outline-light.w-100.btn-sm(href="/")
+          i.bi.bi-shop.me-1
+          = __('ssr.nav.store')
+
+    main.admin-main
+
+      .admin-top
+
+        div
+          .tiny Stride-Co / #{__('ssr.admin.panel')}
+          h2.fw-bold.mb-0= title
+
+        .d-flex.align-items-center.gap-2
+
+          include ../partials/language
+
+          if currentUser
+            span.pill
+              i.bi.bi-person-circle.me-1
+              = currentUser.first_name || currentUser.email
+
+            form(method="POST" action="/logout")
+              button.btn.btn-outline-secondary.btn-sm(type="submit")
+                = __('ssr.nav.logout')
+                i.bi.bi-box-arrow-right.ms-1
+
+      include ../partials/flash
+
+      block content

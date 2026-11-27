@@ -1,0 +1,14 @@
+extends ../layouts/store
+
+block content
+  section.error-page
+    div
+      .error-code= status
+
+      h2.fw-bold.mb-3= title
+
+      p.text-secondary.mb-4= message
+
+      a.btn.btn-dark(href="/")
+        i.bi.bi-house.me-2
+        = __('ssr.nav.home')
