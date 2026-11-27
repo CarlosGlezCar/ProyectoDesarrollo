@@ -1,0 +1,89 @@
+
+extends ../../layouts/admin
+
+block content
+
+  .container-fluid.p-0
+
+    p.text-secondary.mb-4
+
+      = __('ssr.adminCustomers.description')
+
+    .card.p-3.mb-4
+
+      .d-flex.align-items-center.gap-3
+
+        i.bi.bi-people.fs-2.text-primary
+
+        div
+
+          small.text-secondary
+
+            = __('ssr.adminCustomers.totalCustomers')
+
+          h3.fw-bold.mb-0= customers.length
+
+    .card.shadow-sm
+
+      if customers.length === 0
+
+        .card-body.text-center.py-5
+
+          i.bi.bi-people.fs-1.text-secondary
+
+          h5.mt-3
+
+            = __('ssr.adminCustomers.empty')
+
+      else
+
+        .table-responsive
+
+          table.table.table-hover.align-middle.mb-0
+
+            thead.table-light
+
+              tr
+
+                th= __('ssr.adminCustomers.customerId')
+                th= __('ssr.adminCustomers.userId')
+                th= __('ssr.adminCustomers.email')
+                th= __('ssr.adminCustomers.phone')
+                th= __('ssr.adminCustomers.addresses')
+                th= __('ssr.adminCustomers.actions')
+
+            tbody
+
+              each customer in customers
+
+                tr
+
+                  td
+
+                    code= String(customer._id)
+
+                  td= customer.userId
+
+                  td
+
+                    .fw-semibold= customer.email
+
+                  td
+
+                    = customer.phone || '—'
+
+                  td
+
+                    span.badge.text-bg-light
+
+                      = (customer.addresses || []).length
+
+                  td
+
+                    a.btn.btn-outline-dark.btn-sm(
+                      href='/admin/customers/' + String(customer._id)
+                    )
+
+                      i.bi.bi-eye.me-1
+
+                      = __('ssr.myOrders.viewDetail')
