@@ -1,6 +1,8 @@
 const { AccessControl } = require('accesscontrol');
 const { Role, Permission } = require('../models/sql');
 const { Order, Customer } = require('../models/mongo');
+const createError = require('http-errors');
+const { isApi } = require('../utils/web-session');
 
 function parsePermissionKey(key) {
   const parts = key.split(':');
@@ -49,23 +51,28 @@ async function checkCustomerOwnership(req) {
   return String(customer.userId) === String(req.user.id);
 }
 
-function authorize(resource, action, possession) {
+function deny(req, res, next, status, messageKey) {
+  if (isApi(req)) {
+    return res.status(status).json({
+      message: req.__(messageKey),
+      data: null
+    });
+  }
+
+  return next(createError(status));
+}
+
+function authorize(resource, action, possession, options = {}) {
   return async function authorizationMiddleware(req, res, next) {
     try {
       if (!req.user) {
-        return res.status(401).json({
-          message: req.__('common.unauthorized'),
-          data: null
-        });
+        return deny(req, res, next, 401, 'common.unauthorized');
       }
 
       const roleId = req.user.role_id;
 
       if (!roleId) {
-        return res.status(403).json({
-          message: req.__('common.forbidden'),
-          data: null
-        });
+        return deny(req, res, next, 403, 'common.forbidden');
       }
 
       const role = await Role.findByPk(roleId, {
@@ -78,10 +85,7 @@ function authorize(resource, action, possession) {
       });
 
       if (!role) {
-        return res.status(403).json({
-          message: req.__('common.forbidden'),
-          data: null
-        });
+        return deny(req, res, next, 403, 'common.forbidden');
       }
 
       const accessControl = new AccessControl();
@@ -102,6 +106,22 @@ function authorize(resource, action, possession) {
 
       const access = accessControl.can(String(role.id));
 
+      res.locals.can = (resource, action, possession) => {
+        if (!['create', 'read', 'update', 'delete'].includes(action)) {
+          return false;
+        }
+
+        if (!['own', 'any'].includes(possession)) {
+          return false;
+        }
+
+        const method = action +
+          possession[0].toUpperCase() +
+          possession.slice(1);
+
+        return access[method](resource).granted;
+      };
+
       const anyPermission = access[
         action + 'Any'
       ](resource).granted;
@@ -118,24 +138,15 @@ function authorize(resource, action, possession) {
         } else if (ownPermission) {
           ownershipRequired = true;
         } else {
-          return res.status(403).json({
-            message: req.__('common.forbidden'),
-            data: null
-          });
+          return deny(req, res, next, 403, 'common.forbidden');
         }
       } else if (possession === 'any') {
         if (!anyPermission) {
-          return res.status(403).json({
-            message: req.__('common.forbidden'),
-            data: null
-          });
+          return deny(req, res, next, 403, 'common.forbidden');
         }
       } else if (possession === 'own') {
         if (!ownPermission) {
-          return res.status(403).json({
-            message: req.__('common.forbidden'),
-            data: null
-          });
+          return deny(req, res, next, 403, 'common.forbidden');
         }
 
         ownershipRequired = true;
@@ -147,32 +158,28 @@ function authorize(resource, action, possession) {
         possession: ownershipRequired ? 'own' : 'any'
       };
 
-      if (ownershipRequired && resource === 'orders') {
-        if (action === 'read' && !req.params.id) {
-          const customers = await Customer.find({
-            userId: req.user.id
-          }).select('_id');
+      const checkoutOwnOrder = options.checkout === true && !isApi(req) && resource === 'orders' && action === 'create';
 
-          req.ownershipFilter = {
-            customerId: { $in: customers.map(customer => customer._id) }
-          };
-        } else {
-          const ownsOrder = await checkOrderOwnership(req);
+        if (ownershipRequired && resource === 'orders' && !checkoutOwnOrder) {
+          if (action === 'read' && !req.params.id) {
+            const customers = await Customer.find({
+              userId: req.user.id
+            }).select('_id');
 
-          if (ownsOrder === null) {
-            return res.status(404).json({
-              message: req.__('common.notFound'),
-              data: null
-            });
+            req.ownershipFilter = {
+              customerId: { $in: customers.map(customer => customer._id) }
+            };
+          } else {
+            const ownsOrder = await checkOrderOwnership(req);
+
+            if (ownsOrder === null) {
+              return deny(req, res, next, 404, 'common.notFound');
+            }
+
+            if (!ownsOrder) {
+              return deny(req, res, next, 403, 'common.forbidden');
+            }
           }
-
-          if (!ownsOrder) {
-            return res.status(403).json({
-              message: req.__('common.forbidden'),
-              data: null
-            });
-          }
-        }
       }
 
       if (ownershipRequired && resource === 'customers') {
@@ -182,17 +189,11 @@ function authorize(resource, action, possession) {
     const ownsCustomer = await checkCustomerOwnership(req);
 
     if (ownsCustomer === null) {
-      return res.status(404).json({
-        message: req.__('common.notFound'),
-        data: null
-      });
+      return deny(req, res, next, 404, 'common.notFound');
     }
 
     if (!ownsCustomer) {
-      return res.status(403).json({
-        message: req.__('common.forbidden'),
-        data: null
-      });
+      return deny(req, res, next, 403, 'common.forbidden');
     }
   }
 }
