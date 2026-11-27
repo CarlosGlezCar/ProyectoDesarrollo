@@ -4,11 +4,13 @@ const { Inventory, ProductVariant, sequelize } = require('../models/sql');
 const { mockSession } = require('./helpers/session');
 const es = require('../locales/es.json');
 const en = require('../locales/en.json');
+const reservationService = require('../services/reservation.service');
 
 describe('Rutas de inventario (con mocks)', () => {
   let auth;
 
   beforeEach(() => {
+    jest.spyOn(reservationService,'reservedForVariant').mockResolvedValue(0);
     auth = mockSession({
       permissions: [
         'inventory:create:any',
@@ -215,6 +217,125 @@ describe('Rutas de inventario (con mocks)', () => {
   });
 
   describe('PUT /api/inventory/:id', () => {
+    test('Rechaza reducir reservas asignadas a pedidos', async () => {
+
+      reservationService.reservedForVariant
+        .mockResolvedValue(5);
+
+      const update = jest.fn();
+
+      jest.spyOn(Inventory, 'findByPk')
+        .mockResolvedValue({
+          id: 3,
+          variant_id: 2,
+          stock: 50,
+          reserved: 12,
+          update
+        });
+
+      const response = await request(app)
+        .put('/api/inventory/3')
+        .set('Accept-Language', 'es')
+        .set(auth)
+        .send({
+          reserved: 4
+        });
+
+      expect(response.statusCode).toBe(400);
+
+      expect(response.body.message)
+        .toBe(es.inventory.protectedReservations);
+
+      expect(update).not.toHaveBeenCalled();
+
+      expect(reservationService.reservedForVariant)
+        .toHaveBeenCalledWith(
+          2,
+          expect.any(Object)
+        );
+
+    });
+
+    test('Permite conservar exactamente las reservas protegidas', async () => {
+
+      reservationService.reservedForVariant
+        .mockResolvedValue(5);
+
+      const update = jest.fn().mockResolvedValue();
+
+      const reload = jest.fn().mockResolvedValue({
+        id: 3,
+        variant_id: 2,
+        stock: 50,
+        reserved: 5
+      });
+
+      jest.spyOn(Inventory, 'findByPk')
+        .mockResolvedValue({
+          id: 3,
+          variant_id: 2,
+          stock: 50,
+          reserved: 12,
+          update,
+          reload
+        });
+
+      const response = await request(app)
+        .put('/api/inventory/3')
+        .set('Accept-Language', 'es')
+        .set(auth)
+        .send({
+          reserved: 5
+        });
+
+      expect(response.statusCode).toBe(200);
+
+      expect(update).toHaveBeenCalledWith(
+        { reserved: 5 },
+        expect.objectContaining({
+          transaction: expect.any(Object)
+        })
+      );
+
+    });
+
+    test('Permite incrementar las reservas manuales', async () => {
+
+      reservationService.reservedForVariant
+        .mockResolvedValue(5);
+
+      const update = jest.fn().mockResolvedValue();
+
+      const reload = jest.fn().mockResolvedValue({
+        id: 3,
+        variant_id: 2,
+        stock: 50,
+        reserved: 15
+      });
+
+      jest.spyOn(Inventory, 'findByPk')
+        .mockResolvedValue({
+          id: 3,
+          variant_id: 2,
+          stock: 50,
+          reserved: 12,
+          update,
+          reload
+        });
+
+      const response = await request(app)
+        .put('/api/inventory/3')
+        .set('Accept-Language', 'es')
+        .set(auth)
+        .send({
+          reserved: 15
+        });
+
+      expect(response.statusCode).toBe(200);
+
+      expect(update).toHaveBeenCalled();
+
+    });
     test('responde 200 y actualiza el stock', async () => {
       const reload = jest.fn().mockResolvedValue({ id: 3, stock: 20, reserved: 2 });
       const update = jest.fn().mockResolvedValue();

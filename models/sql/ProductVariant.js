@@ -26,16 +26,18 @@ const ProductVariant = sequelize.define('ProductVariant', {
     },
     size: {
         type: DataTypes.STRING(20),
-        allowNull: true,
+        allowNull: false,
         validate: {
+            notNull: true,
             notEmpty: true,
             len: [1, 20]
         }
     },
     color: {
         type: DataTypes.STRING(30),
-        allowNull: true,
+        allowNull: false,
         validate: {
+            notNull: true,
             notEmpty: true,
             len: [1, 30]
         }

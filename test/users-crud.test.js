@@ -321,6 +321,35 @@ describe('Rutas de usuarios (con mocks)', () => {
   });
 
   describe('DELETE /api/users/:id', () => {
+
+    test('Impide eliminar la propia cuenta', async () => {
+
+      const session = mockSession({
+        userId: 1,
+        roleId: 1,
+        permissions: ['users:delete:any']
+      });
+
+      const destroy = jest.fn();
+
+      User.findByPk.mockResolvedValue({
+        id: 1,
+        role_id: 1,
+        active: true,
+        destroy
+      });
+
+      const response = await request(app)
+        .delete('/api/users/1')
+        .set('Accept-Language', 'es')
+        .set(session);
+
+      expect(response.statusCode).toBe(400);
+
+      expect(destroy).not.toHaveBeenCalled();
+
+    });
+    
     test('responde 200, elimina y no devuelve datos sensibles', async () => {
       const destroy = jest.fn().mockResolvedValue();
       mockTarget(dbUser({ destroy }));

@@ -1,0 +1,15 @@
+﻿
+=== GRUPOS DINAMICOS ===
+Revisando: ssr.dashboard.status.
+Revisando: ssr.categories.
+Revisando: ssr.adminRoles.resources.
+Revisando: ssr.adminRoles.permissionActions.
+Revisando: ssr.adminRoles.scopes.
+Revisando: ssr.checkout.payment.
+
+=== AUDITORIA DE VISTAS ===
+Plantillas revisadas: 43
+Claves verificadas: 420
+Referencias dinamicas: 13
+Grupos dinamicos: 6
+Traducciones faltantes: 0

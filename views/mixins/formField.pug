@@ -1,0 +1,18 @@
+mixin formField(name, label, type, value, error)
+  - const fieldId = attributes.id || name
+
+  .mb-3
+
+    label.form-label(for=fieldId)= label
+
+    input.form-control(
+      id=fieldId
+      name=name
+      type=type || 'text'
+      value=(type === 'password' ? undefined : value)
+      class=(error ? 'is-invalid' : '')
+    )&attributes(attributes)
+
+    if error
+      .invalid-feedback
+        = error

@@ -1,0 +1,121 @@
+
+extends ../../layouts/admin
+
+block content
+
+  .container-fluid.p-0
+
+    a.btn.btn-outline-secondary.mb-4(href='/admin/roles')
+
+      i.bi.bi-arrow-left.me-2
+
+      = __('ssr.adminRoles.back')
+
+    .card.p-4.mb-4
+
+      .d-flex.align-items-center.gap-3
+
+        i.bi.bi-shield-lock.fs-1.text-primary
+
+        div
+
+          h4.fw-bold.mb-1= role.name
+
+          p.text-secondary.mb-0= role.description
+
+    if error
+
+      .alert.alert-danger(role='alert')
+
+        = error
+
+    if isOwnRole
+
+      .alert.alert-warning
+
+        i.bi.bi-exclamation-triangle.me-2
+
+        = __('ssr.adminRoles.selfProtected')
+
+    form(
+      method='POST'
+      action='/admin/roles/' + role.id
+    )
+
+      input(
+        type='hidden'
+        name='permissionsSubmitted'
+        value='1'
+      )
+
+      .card.p-3.mb-4
+
+        h5.fw-bold.mb-2
+
+          = __('ssr.adminRoles.editPermissions')
+
+        p.text-secondary.mb-0
+
+          = __('ssr.adminRoles.instructions')
+
+      if groups.length
+
+        .row.g-3
+
+          each group in groups
+
+            .col-lg-6.col-xl-4
+
+              .card.p-3.h-100
+
+                h5.fw-bold.mb-3
+
+                  = __('ssr.adminRoles.resources.' + group.resource) === 'ssr.adminRoles.resources.' + group.resource ? group.resource : __('ssr.adminRoles.resources.' + group.resource)
+
+                each permission in group.permissions
+
+                  - const parts = permission.key.split(':')
+
+                  .form-check.border-bottom.py-2
+
+                    input.form-check-input(
+                      type='checkbox'
+                      name='permissionIds'
+                      id='permission-' + permission.id
+                      value=permission.id
+                      checked=selectedIds.includes(Number(permission.id))
+                    )
+
+                    label.form-check-label.w-100(
+                      for='permission-' + permission.id
+                    )
+
+                      .fw-semibold
+
+                        = __('ssr.adminRoles.permissionActions.' + parts[1])
+
+                        |  · 
+
+                        = __('ssr.adminRoles.scopes.' + parts[2])
+
+                      code.d-block.small
+
+                        = permission.key
+
+      else
+
+        .alert.alert-secondary
+
+          = __('ssr.adminRoles.noPermissions')
+
+      .d-flex.flex-wrap.justify-content-end.gap-2.mt-4
+
+        a.btn.btn-outline-secondary(href='/admin/roles')
+
+          = __('ssr.common.cancel')
+
+        button.btn.btn-dark(type='submit')
+
+          i.bi.bi-check-circle.me-2
+
+          = __('ssr.common.save')

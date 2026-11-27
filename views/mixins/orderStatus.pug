@@ -1,0 +1,9 @@
+mixin orderStatus(status)
+
+  - const colors = {pending: 'warning', paid: 'success', shipped: 'info', delivered: 'success', cancelled: 'danger', unknown: 'secondary'}
+
+  - const safeStatus = Object.hasOwn(colors, status) ? status : 'unknown'
+
+  span.badge(class='text-bg-' + colors[safeStatus])
+
+    = __('ssr.dashboard.status.' + safeStatus)

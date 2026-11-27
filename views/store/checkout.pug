@@ -1,0 +1,214 @@
+
+extends ../layouts/store
+
+include ../mixins/formField
+
+block content
+
+  .container.py-5
+
+    .tiny.text-uppercase.mb-2
+      | STRIDE-CO / CHECKOUT
+
+    h1.fw-bold.mb-4
+      = __('ssr.checkout.title')
+
+    if errors.general
+
+      .alert.alert-danger(role='alert')
+        = errors.general
+
+    //- Recuperar compra pendiente
+
+    if pending
+
+      .card.p-4
+
+        h4.fw-bold
+          = __('ssr.checkout.pendingTitle')
+
+        p.text-secondary
+          = __('ssr.checkout.pendingDescription')
+
+        form(method='POST' action='/checkout')
+
+          input(
+            type='hidden'
+            name='orderId'
+            value=orderId
+          )
+
+          button.btn.btn-dark(type='submit')
+            i.bi.bi-arrow-clockwise.me-2
+            = __('ssr.checkout.retry')
+
+    else
+
+      .row.g-4
+
+        //- FORMULARIO DE COMPRA
+
+        .col-lg-8
+
+          form(method='POST' action='/checkout')
+
+            input(
+              type='hidden'
+              name='orderId'
+              value=orderId
+            )
+
+            .card.p-4.mb-4
+
+              h5.fw-bold.mb-3
+                = __('ssr.checkout.buyer')
+
+              if currentUser
+
+                p.mb-1
+                  = currentUser.first_name || ''
+
+                p.text-secondary.mb-0
+                  = currentUser.email
+
+            .card.p-4.mb-4
+
+              h5.fw-bold.mb-4
+                = __('ssr.checkout.shippingAddress')
+
+              .row.g-3
+
+                .col-md-8
+
+                  +formField('street', __('ssr.checkout.street'), 'text', values.address.street, errors.street)(required maxlength='150')
+
+                .col-md-4
+
+                  +formField('number', __('ssr.checkout.number'), 'text', values.address.number, errors.number)(required maxlength='150')
+
+                .col-md-6
+
+                  +formField('city', __('ssr.checkout.city'), 'text', values.address.city, errors.city)(required maxlength='150')
+
+                .col-md-6
+
+                  +formField('state', __('ssr.checkout.state'), 'text', values.address.state, errors.state)(required maxlength='150')
+
+                .col-md-6
+
+                  +formField('postalCode', __('ssr.checkout.postalCode'), 'text', values.address.postalCode, errors.postalCode)(required maxlength='150')
+
+                .col-md-6
+
+                  +formField('country', __('ssr.checkout.country'), 'text', values.address.country, errors.country)(required maxlength='150')
+
+            .card.p-4.mb-4
+
+              h5.fw-bold.mb-3
+                = __('ssr.checkout.paymentMethod')
+
+              .alert.alert-info
+
+                i.bi.bi-info-circle.me-2
+
+                = __('ssr.checkout.demoPayment')
+
+              select.form-select(
+                name='paymentMethod'
+                required
+                aria-label=__('ssr.checkout.paymentMethod')
+                class=(errors.paymentMethod ? 'is-invalid' : '')
+              )
+
+                each method in ['cash', 'card', 'transfer']
+
+                  option(
+                    value=method
+                    selected=(values.paymentMethod === method)
+                  )= __('ssr.checkout.payment.' + method)
+
+              if errors.paymentMethod
+
+                .invalid-feedback
+                  = errors.paymentMethod
+
+            if !cart.canCheckout
+
+              .alert.alert-warning
+
+                = __('ssr.checkout.reviewCart')
+
+                a.alert-link.ms-2(href='/cart')
+                  = __('ssr.nav.cart')
+
+            .d-flex.flex-wrap.gap-2
+
+              a.btn.btn-outline-dark(href='/cart')
+
+                i.bi.bi-arrow-left.me-2
+
+                = __('ssr.checkout.backToCart')
+
+              button.btn.btn-dark.flex-grow-1(
+                type='submit'
+                disabled=!cart.canCheckout
+              )
+
+                i.bi.bi-check-circle.me-2
+
+                = __('ssr.checkout.placeOrder')
+
+        //- RESUMEN DEL PEDIDO
+
+        .col-lg-4
+
+          .card.p-4
+
+            h5.fw-bold.mb-4
+              = __('ssr.checkout.summary')
+
+            each line in cart.lines
+
+              .border-bottom.pb-3.mb-3
+
+                .fw-semibold
+
+                  = line.name || __('ssr.cart.unavailable')
+
+                if line.name
+
+                  small.text-secondary.d-block
+                    = line.sku
+
+                  small.text-secondary.d-block
+
+                    = line.size + ' / ' + line.color
+
+                .d-flex.justify-content-between.mt-2
+
+                  span
+
+                    = __('ssr.cart.quantity') + ': ' + line.quantity
+
+                  strong
+                    = formatMoney(line.subtotalCents / 100)
+
+            .d-flex.justify-content-between.mb-3
+
+              span= __('ssr.cart.subtotal')
+
+              strong= formatMoney(cart.subtotalCents / 100)
+
+            .d-flex.justify-content-between
+
+              span= __('ssr.cart.shipping')
+
+              span.text-success= __('ssr.cart.freeShipping')
+
+            hr
+
+            .d-flex.justify-content-between.fs-5
+
+              strong= __('ssr.cart.total')
+
+              strong= formatMoney(cart.totalCents / 100)

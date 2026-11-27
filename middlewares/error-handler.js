@@ -69,13 +69,28 @@ function errorHandler(err, req, res, next) {
         : i18n.__(messageKey);
 
     const isApi = req.path === '/api' || req.path.startsWith('/api/');
-    if (isApi || err.name === 'UnauthorizedError') {
-        return res.status(status).json({ message, data: null });
+
+    if (isApi) {
+        return res.status(status).json({
+            message,
+            data: null
+        });
     }
 
-    res.locals.message = message;
-    res.locals.error = req.app.get('env') === 'development' ? err : { status };
-    return res.status(status).render('error');
+    const views = {
+        403: 'errors/403',
+        404: 'errors/404',
+        500: 'errors/500'
+    };
+
+    const view = views[status] || 'errors/generic';
+
+    return res.status(status).render(view, {
+        title: message,
+        description: message,
+        message,
+        status
+    });
 }
 
 module.exports = errorHandler;

@@ -1,0 +1,21 @@
+﻿┌─────────┬──────────────────────────────────────┬─────────────────────┬───────────┐
+│ (index) │ controlador                          │ servicio            │ resultado │
+├─────────┼──────────────────────────────────────┼─────────────────────┼───────────┤
+│ 0       │ 'controllers/auth.js'                │ 'auth.service'      │ 'OK'      │
+│ 1       │ 'controllers/web/auth.js'            │ 'auth.service'      │ 'OK'      │
+│ 2       │ 'controllers/products.js'            │ 'product.service'   │ 'OK'      │
+│ 3       │ 'controllers/web/store.js'           │ 'product.service'   │ 'OK'      │
+│ 4       │ 'controllers/web/admin.js'           │ 'product.service'   │ 'OK'      │
+│ 5       │ 'controllers/variants.js'            │ 'variant.service'   │ 'OK'      │
+│ 6       │ 'controllers/inventory.js'           │ 'inventory.service' │ 'OK'      │
+│ 7       │ 'controllers/customers.js'           │ 'customer.service'  │ 'OK'      │
+│ 8       │ 'controllers/web/admin-customers.js' │ 'customer.service'  │ 'OK'      │
+│ 9       │ 'controllers/orders.js'              │ 'order.service'     │ 'OK'      │
+│ 10      │ 'controllers/web/admin-orders.js'    │ 'order.service'     │ 'OK'      │
+│ 11      │ 'controllers/users.js'               │ 'user.service'      │ 'OK'      │
+│ 12      │ 'controllers/web/admin-users.js'     │ 'user.service'      │ 'OK'      │
+│ 13      │ 'controllers/roles.js'               │ 'role.service'      │ 'OK'      │
+│ 14      │ 'controllers/web/admin-roles.js'     │ 'role.service'      │ 'OK'      │
+└─────────┴──────────────────────────────────────┴─────────────────────┴───────────┘
+
+=== CONSULTAS DIRECTAS EN CONTROLADORES ===

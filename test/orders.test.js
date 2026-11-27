@@ -12,13 +12,23 @@ const USER_ID = 3;
 const SELLER_ID = 5;
 const ORDER_ID = '507f1f77bcf86cd799439021';
 const CUSTOMER_ID = '507f1f77bcf86cd799439011';
-const STATUSES = Order.schema.path('statusHistory').schema.path('status').enumValues;
+
+const STATUSES = Order.schema
+  .path('statusHistory')
+  .schema.path('status').enumValues;
 
 const validOrder = {
   customerId: CUSTOMER_ID,
   salesPersonId: SELLER_ID,
   paymentMethod: 'card',
-  totals: { subtotal: '100.00', shipping: '0', discount: '0', total: '100.00' },
+
+  totals: {
+    subtotal: '100.00',
+    shipping: '0',
+    discount: '0',
+    total: '100.00'
+  },
+
   shippingAddress: {
     street: 'Calle Falsa',
     number: '123',
@@ -27,7 +37,14 @@ const validOrder = {
     postalCode: '31000',
     country: 'México'
   },
-  items: [{ productId: 1, quantity: 2, unitPrice: '50.00' }]
+
+  items: [
+    {
+      productId: 1,
+      quantity: 2,
+      unitPrice: '50.00'
+    }
+  ]
 };
 
 const ADMIN_PERMISSIONS = [
@@ -37,32 +54,64 @@ const ADMIN_PERMISSIONS = [
   'orders:delete:any'
 ];
 
-const OWN_PERMISSIONS = ['orders:create:own', 'orders:read:own'];
+const OWN_PERMISSIONS = [
+  'orders:create:own',
+  'orders:read:own'
+];
 
-function mockReferences({ customer = true, seller = true, products = 1 } = {}) {
-  jest.spyOn(Customer, 'exists').mockResolvedValue(customer ? { _id: CUSTOMER_ID } : null);
-  jest.spyOn(Product, 'count').mockResolvedValue(products);
+function mockReferences({
+  customer = true,
+  seller = true,
+  products = 1
+} = {}) {
+
+  jest.spyOn(Customer, 'exists')
+    .mockResolvedValue(
+      customer ? { _id: CUSTOMER_ID } : null
+    );
+
+  jest.spyOn(Product, 'count')
+    .mockResolvedValue(products);
+
   User.findByPk.mockImplementation(async id =>
     Number(id) === SELLER_ID && !seller
       ? null
-      : { id: Number(id), role_id: 1, active: true }
+      : {
+        id: Number(id),
+        role_id: 1,
+        active: true
+      }
   );
 }
 
 describe('Rutas de órdenes (con mocks)', () => {
+
   let auth;
 
   beforeEach(() => {
-    auth = mockSession({ userId: SALES_ID, roleId: 2, permissions: ADMIN_PERMISSIONS });
+    auth = mockSession({
+      userId: SALES_ID,
+      roleId: 2,
+      permissions: ADMIN_PERMISSIONS
+    });
   });
 
   afterEach(() => {
     jest.restoreAllMocks();
   });
 
+  // ==========================================
+  // GET /api/orders
+  // ==========================================
+
   describe('GET /api/orders', () => {
+
     test('con permiso any responde 200 con todas las órdenes (sin filtro)', async () => {
-      const find = jest.spyOn(Order, 'find').mockReturnValue(query([{ _id: ORDER_ID }]));
+
+      const find = jest.spyOn(Order, 'find')
+        .mockReturnValue(query([
+          { _id: ORDER_ID }
+        ]));
 
       const response = await request(app)
         .get('/api/orders')
@@ -72,10 +121,13 @@ describe('Rutas de órdenes (con mocks)', () => {
       expect(response.statusCode).toBe(200);
       expect(response.body.message).toBe(es.orders.list);
       expect(find).toHaveBeenCalledWith({});
+
     });
 
     test('responde en inglés con Accept-Language: en', async () => {
-      jest.spyOn(Order, 'find').mockReturnValue(query([]));
+
+      jest.spyOn(Order, 'find')
+        .mockReturnValue(query([]));
 
       const response = await request(app)
         .get('/api/orders')
@@ -84,10 +136,17 @@ describe('Rutas de órdenes (con mocks)', () => {
 
       expect(response.statusCode).toBe(200);
       expect(response.body.message).toBe(en.orders.list);
+
     });
 
     test('responde 403 a un usuario que solo tiene orders:read:own (orders:read:any)', async () => {
-      const own = mockSession({ userId: USER_ID, roleId: 3, permissions: OWN_PERMISSIONS });
+
+      const own = mockSession({
+        userId: USER_ID,
+        roleId: 3,
+        permissions: OWN_PERMISSIONS
+      });
+
       const find = jest.spyOn(Order, 'find');
 
       const response = await request(app)
@@ -98,14 +157,34 @@ describe('Rutas de órdenes (con mocks)', () => {
       expect(response.statusCode).toBe(403);
       expect(response.body.message).toBe(es.common.forbidden);
       expect(find).not.toHaveBeenCalled();
+
     });
+
   });
 
+  // ==========================================
+  // GET /api/orders/own
+  // ==========================================
+
   describe('GET /api/orders/own', () => {
+
     test('solo consulta las órdenes de los clientes del propio usuario', async () => {
-      const own = mockSession({ userId: USER_ID, roleId: 3, permissions: OWN_PERMISSIONS });
-      jest.spyOn(Customer, 'find').mockReturnValue(query([{ _id: CUSTOMER_ID }]));
-      const find = jest.spyOn(Order, 'find').mockReturnValue(query([{ _id: ORDER_ID }]));
+
+      const own = mockSession({
+        userId: USER_ID,
+        roleId: 3,
+        permissions: OWN_PERMISSIONS
+      });
+
+      jest.spyOn(Customer, 'find')
+        .mockReturnValue(query([
+          { _id: CUSTOMER_ID }
+        ]));
+
+      const find = jest.spyOn(Order, 'find')
+        .mockReturnValue(query([
+          { _id: ORDER_ID }
+        ]));
 
       const response = await request(app)
         .get('/api/orders/own')
@@ -113,11 +192,22 @@ describe('Rutas de órdenes (con mocks)', () => {
         .set(own);
 
       expect(response.statusCode).toBe(200);
-      expect(find).toHaveBeenCalledWith({ customerId: { $in: [CUSTOMER_ID] } });
+
+      expect(find).toHaveBeenCalledWith({
+        customerId: {
+          $in: [CUSTOMER_ID]
+        }
+      });
+
     });
 
     test('responde 403 a un rol sin orders:read:own', async () => {
-      const sinPermiso = mockSession({ userId: USER_ID, roleId: 3, permissions: ['products:read:any'] });
+
+      const sinPermiso = mockSession({
+        userId: USER_ID,
+        roleId: 3,
+        permissions: ['products:read:any']
+      });
 
       const response = await request(app)
         .get('/api/orders/own')
@@ -125,14 +215,26 @@ describe('Rutas de órdenes (con mocks)', () => {
         .set(sinPermiso);
 
       expect(response.statusCode).toBe(403);
+
     });
+
   });
 
+  // ==========================================
+  // GET /api/orders/:id
+  // ==========================================
+
   describe('GET /api/orders/:id', () => {
+
     test('con permiso any responde 200 con la orden y su cliente', async () => {
-      jest.spyOn(Order, 'findById').mockReturnValue(
-        query({ _id: ORDER_ID, customerId: { email: 'cliente@strideco.test' } })
-      );
+
+      jest.spyOn(Order, 'findById')
+        .mockReturnValue(query({
+          _id: ORDER_ID,
+          customerId: {
+            email: 'cliente@strideco.test'
+          }
+        }));
 
       const response = await request(app)
         .get(`/api/orders/${ORDER_ID}`)
@@ -140,12 +242,19 @@ describe('Rutas de órdenes (con mocks)', () => {
         .set(auth);
 
       expect(response.statusCode).toBe(200);
-      expect(response.body.message).toBe(es.orders.found);
-      expect(response.body.data.customerId.email).toBe('cliente@strideco.test');
+
+      expect(response.body.message)
+        .toBe(es.orders.found);
+
+      expect(response.body.data.customerId.email)
+        .toBe('cliente@strideco.test');
+
     });
 
     test('responde 404 si la orden no existe', async () => {
-      jest.spyOn(Order, 'findById').mockReturnValue(query(null));
+
+      jest.spyOn(Order, 'findById')
+        .mockReturnValue(query(null));
 
       const response = await request(app)
         .get(`/api/orders/${ORDER_ID}`)
@@ -153,28 +262,47 @@ describe('Rutas de órdenes (con mocks)', () => {
         .set(auth);
 
       expect(response.statusCode).toBe(404);
-      expect(response.body.message).toBe(es.orders.notFound);
+
+      expect(response.body.message)
+        .toBe(es.orders.notFound);
+
       expect(response.body.data).toBeNull();
+
     });
 
     test('responde 400 con un id mal formado', async () => {
+
       const response = await request(app)
         .get('/api/orders/abc')
         .set('Accept-Language', 'es')
         .set(auth);
 
       expect(response.statusCode).toBe(400);
-      expect(response.body.message).toBe(es.common.invalidId);
+
+      expect(response.body.message)
+        .toBe(es.common.invalidId);
+
     });
 
     test('con permiso own responde 200 si la orden es del usuario', async () => {
-      const own = mockSession({ userId: USER_ID, roleId: 3, permissions: OWN_PERMISSIONS });
-      jest.spyOn(Order, 'findById').mockReturnValue(
-        query({ _id: ORDER_ID, customerId: CUSTOMER_ID })
-      );
-      jest.spyOn(Customer, 'findById').mockReturnValue(
-        query({ _id: CUSTOMER_ID, userId: USER_ID })
-      );
+
+      const own = mockSession({
+        userId: USER_ID,
+        roleId: 3,
+        permissions: OWN_PERMISSIONS
+      });
+
+      jest.spyOn(Order, 'findById')
+        .mockReturnValue(query({
+          _id: ORDER_ID,
+          customerId: CUSTOMER_ID
+        }));
+
+      jest.spyOn(Customer, 'findById')
+        .mockReturnValue(query({
+          _id: CUSTOMER_ID,
+          userId: USER_ID
+        }));
 
       const response = await request(app)
         .get(`/api/orders/${ORDER_ID}`)
@@ -182,17 +310,31 @@ describe('Rutas de órdenes (con mocks)', () => {
         .set(own);
 
       expect(response.statusCode).toBe(200);
-      expect(response.body.message).toBe(es.orders.found);
+
+      expect(response.body.message)
+        .toBe(es.orders.found);
+
     });
 
     test('con permiso own responde 403 si la orden es de otro usuario', async () => {
-      const own = mockSession({ userId: USER_ID, roleId: 3, permissions: OWN_PERMISSIONS });
-      jest.spyOn(Order, 'findById').mockReturnValue(
-        query({ _id: ORDER_ID, customerId: CUSTOMER_ID })
-      );
-      jest.spyOn(Customer, 'findById').mockReturnValue(
-        query({ _id: CUSTOMER_ID, userId: 99 })
-      );
+
+      const own = mockSession({
+        userId: USER_ID,
+        roleId: 3,
+        permissions: OWN_PERMISSIONS
+      });
+
+      jest.spyOn(Order, 'findById')
+        .mockReturnValue(query({
+          _id: ORDER_ID,
+          customerId: CUSTOMER_ID
+        }));
+
+      jest.spyOn(Customer, 'findById')
+        .mockReturnValue(query({
+          _id: CUSTOMER_ID,
+          userId: 99
+        }));
 
       const response = await request(app)
         .get(`/api/orders/${ORDER_ID}`)
@@ -200,12 +342,22 @@ describe('Rutas de órdenes (con mocks)', () => {
         .set(own);
 
       expect(response.statusCode).toBe(403);
-      expect(response.body.message).toBe(es.common.forbidden);
+
+      expect(response.body.message)
+        .toBe(es.common.forbidden);
+
     });
 
     test('con permiso own responde 404 si la orden no existe', async () => {
-      const own = mockSession({ userId: USER_ID, roleId: 3, permissions: OWN_PERMISSIONS });
-      jest.spyOn(Order, 'findById').mockReturnValue(query(null));
+
+      const own = mockSession({
+        userId: USER_ID,
+        roleId: 3,
+        permissions: OWN_PERMISSIONS
+      });
+
+      jest.spyOn(Order, 'findById')
+        .mockReturnValue(query(null));
 
       const response = await request(app)
         .get(`/api/orders/${ORDER_ID}`)
@@ -213,15 +365,32 @@ describe('Rutas de órdenes (con mocks)', () => {
         .set(own);
 
       expect(response.statusCode).toBe(404);
-      expect(response.body.message).toBe(es.common.notFound);
+
+      expect(response.body.message)
+        .toBe(es.common.notFound);
+
     });
+
   });
 
+  // ==========================================
+  // POST /api/orders
+  // ==========================================
+
   describe('POST /api/orders', () => {
+
     test('responde 201 y registra el estado inicial pending con quien creó la orden', async () => {
+
       mockReferences();
-      const populate = jest.fn().mockResolvedValue();
-      const create = jest.spyOn(Order, 'create').mockResolvedValue({ _id: ORDER_ID, populate });
+
+      const populate = jest.fn()
+        .mockResolvedValue();
+
+      const create = jest.spyOn(Order, 'create')
+        .mockResolvedValue({
+          _id: ORDER_ID,
+          populate
+        });
 
       const response = await request(app)
         .post('/api/orders')
@@ -230,20 +399,48 @@ describe('Rutas de órdenes (con mocks)', () => {
         .send(validOrder);
 
       expect(response.statusCode).toBe(201);
-      expect(response.body.message).toBe(es.orders.created);
+
+      expect(response.body.message)
+        .toBe(es.orders.created);
+
       const guardado = create.mock.calls[0][0];
-      expect(guardado.customerId).toBe(CUSTOMER_ID);
+
+      expect(guardado.customerId)
+        .toBe(CUSTOMER_ID);
+
       expect(guardado.statusHistory).toEqual([
-        { status: 'pending', changedById: SALES_ID }
+        {
+          status: 'pending',
+          changedById: SALES_ID
+        }
       ]);
-      expect(populate).toHaveBeenCalledWith('customerId');
+
+      expect(populate)
+        .toHaveBeenCalledWith('customerId');
+
     });
 
     test('con permiso own responde 201 si el cliente es del usuario', async () => {
-      const own = mockSession({ userId: USER_ID, roleId: 3, permissions: OWN_PERMISSIONS });
+
+      const own = mockSession({
+        userId: USER_ID,
+        roleId: 3,
+        permissions: OWN_PERMISSIONS
+      });
+
       mockReferences();
-      jest.spyOn(Customer, 'findById').mockReturnValue(query({ _id: CUSTOMER_ID, userId: USER_ID }));
-      jest.spyOn(Order, 'create').mockResolvedValue({ _id: ORDER_ID, populate: jest.fn() });
+
+      jest.spyOn(Customer, 'findById')
+        .mockReturnValue(query({
+          _id: CUSTOMER_ID,
+          userId: USER_ID
+        }));
+
+      jest.spyOn(Order, 'create')
+        .mockResolvedValue({
+          _id: ORDER_ID,
+          populate: jest.fn()
+        });
 
       const response = await request(app)
         .post('/api/orders')
@@ -252,11 +449,23 @@ describe('Rutas de órdenes (con mocks)', () => {
         .send(validOrder);
 
       expect(response.statusCode).toBe(201);
+
     });
 
     test('con permiso own responde 403 si el cliente es de otro usuario', async () => {
-      const own = mockSession({ userId: USER_ID, roleId: 3, permissions: OWN_PERMISSIONS });
-      jest.spyOn(Customer, 'findById').mockReturnValue(query({ _id: CUSTOMER_ID, userId: 99 }));
+
+      const own = mockSession({
+        userId: USER_ID,
+        roleId: 3,
+        permissions: OWN_PERMISSIONS
+      });
+
+      jest.spyOn(Customer, 'findById')
+        .mockReturnValue(query({
+          _id: CUSTOMER_ID,
+          userId: 99
+        }));
+
       const create = jest.spyOn(Order, 'create');
 
       const response = await request(app)
@@ -266,12 +475,20 @@ describe('Rutas de órdenes (con mocks)', () => {
         .send(validOrder);
 
       expect(response.statusCode).toBe(403);
-      expect(response.body.message).toBe(es.common.forbidden);
+
+      expect(response.body.message)
+        .toBe(es.common.forbidden);
+
       expect(create).not.toHaveBeenCalled();
+
     });
 
     test('responde 404 si el cliente no existe', async () => {
-      mockReferences({ customer: false });
+
+      mockReferences({
+        customer: false
+      });
+
       const create = jest.spyOn(Order, 'create');
 
       const response = await request(app)
@@ -281,12 +498,20 @@ describe('Rutas de órdenes (con mocks)', () => {
         .send(validOrder);
 
       expect(response.statusCode).toBe(404);
-      expect(response.body.message).toBe(es.orders.customerNotFound);
+
+      expect(response.body.message)
+        .toBe(es.orders.customerNotFound);
+
       expect(create).not.toHaveBeenCalled();
+
     });
 
     test('responde 404 si el vendedor no existe', async () => {
-      mockReferences({ seller: false });
+
+      mockReferences({
+        seller: false
+      });
+
       const create = jest.spyOn(Order, 'create');
 
       const response = await request(app)
@@ -296,12 +521,20 @@ describe('Rutas de órdenes (con mocks)', () => {
         .send(validOrder);
 
       expect(response.statusCode).toBe(404);
-      expect(response.body.message).toBe(es.users.notFound);
+
+      expect(response.body.message)
+        .toBe(es.users.notFound);
+
       expect(create).not.toHaveBeenCalled();
+
     });
 
     test('responde 404 si algún producto no existe', async () => {
-      mockReferences({ products: 0 });
+
+      mockReferences({
+        products: 0
+      });
+
       const create = jest.spyOn(Order, 'create');
 
       const response = await request(app)
@@ -311,50 +544,113 @@ describe('Rutas de órdenes (con mocks)', () => {
         .send(validOrder);
 
       expect(response.statusCode).toBe(404);
-      expect(response.body.message).toBe(es.products.notFound);
+
+      expect(response.body.message)
+        .toBe(es.products.notFound);
+
       expect(create).not.toHaveBeenCalled();
+
     });
 
     test('responde 400 si la orden no trae productos', async () => {
+
       mockReferences();
+
       const create = jest.spyOn(Order, 'create');
 
       const response = await request(app)
         .post('/api/orders')
         .set('Accept-Language', 'es')
         .set(auth)
-        .send({ ...validOrder, items: [] });
+        .send({
+          ...validOrder,
+          items: []
+        });
 
       expect(response.statusCode).toBe(400);
-      expect(response.body.message).toBe(es.orders.emptyItems);
+
+      expect(response.body.message)
+        .toBe(es.orders.emptyItems);
+
       expect(create).not.toHaveBeenCalled();
+
     });
 
     test('responde 400 si el customerId está mal formado', async () => {
+
       mockReferences();
+
       const create = jest.spyOn(Order, 'create');
 
       const response = await request(app)
         .post('/api/orders')
         .set('Accept-Language', 'es')
         .set(auth)
-        .send({ ...validOrder, customerId: 'abc' });
+        .send({
+          ...validOrder,
+          customerId: 'abc'
+        });
 
       expect(response.statusCode).toBe(400);
-      expect(response.body.message).toBe(es.common.invalidId);
+
+      expect(response.body.message)
+        .toBe(es.common.invalidId);
+
       expect(create).not.toHaveBeenCalled();
+
     });
 
     test.each([
-      ['sin body', undefined],
-      ['sin customerId', { ...validOrder, customerId: undefined }],
-      ['sin items', { ...validOrder, items: undefined }],
-      ['sin totals', { ...validOrder, totals: undefined }],
-      ['con salesPersonId inválido', { ...validOrder, salesPersonId: 'abc' }],
-      ['con un producto sin productId válido', { ...validOrder, items: [{ productId: 'abc' }] }],
-      ['con un campo no permitido', { ...validOrder, status: 'delivered' }]
+      [
+        'sin body',
+        undefined
+      ],
+      [
+        'sin customerId',
+        {
+          ...validOrder,
+          customerId: undefined
+        }
+      ],
+      [
+        'sin items',
+        {
+          ...validOrder,
+          items: undefined
+        }
+      ],
+      [
+        'sin totals',
+        {
+          ...validOrder,
+          totals: undefined
+        }
+      ],
+      [
+        'con salesPersonId inválido',
+        {
+          ...validOrder,
+          salesPersonId: 'abc'
+        }
+      ],
+      [
+        'con un producto sin productId válido',
+        {
+          ...validOrder,
+          items: [{ productId: 'abc' }]
+        }
+      ],
+      [
+        'con un campo no permitido',
+        {
+          ...validOrder,
+          status: 'delivered'
+        }
+      ]
     ])('responde 400 %s y no llama a la base', async (_caso, body) => {
+
       mockReferences();
+
       const create = jest.spyOn(Order, 'create');
 
       const response = await request(app)
@@ -364,101 +660,224 @@ describe('Rutas de órdenes (con mocks)', () => {
         .send(body);
 
       expect(response.statusCode).toBe(400);
+
       expect(create).not.toHaveBeenCalled();
+
     });
+
   });
 
+  // ==========================================
+  // PUT /api/orders/:id
+  // ==========================================
+
   describe('PUT /api/orders/:id', () => {
+
     function orderDocument() {
       return {
         _id: ORDER_ID,
-        statusHistory: [{ status: 'pending' }],
+        channel: 'api',
+
+        statusHistory: [
+          { status: 'pending' }
+        ],
+
         save: jest.fn().mockResolvedValue(),
         populate: jest.fn().mockResolvedValue()
       };
     }
 
     test('responde 200 y agrega el cambio de estado al historial', async () => {
+
       const order = orderDocument();
-      jest.spyOn(Order, 'findById').mockReturnValue(query(order));
-      const nuevoEstado = STATUSES.find(status => status !== 'pending');
+
+      jest.spyOn(Order, 'findById')
+        .mockReturnValue(query(order));
+
+      const nuevoEstado = STATUSES.find(
+        status => status !== 'pending'
+      );
 
       const response = await request(app)
         .put(`/api/orders/${ORDER_ID}`)
         .set('Accept-Language', 'es')
         .set(auth)
-        .send({ status: nuevoEstado, note: 'Enviado por paquetería' });
+        .send({
+          status: nuevoEstado,
+          note: 'Enviado por paquetería'
+        });
 
       expect(response.statusCode).toBe(200);
-      expect(response.body.message).toBe(es.orders.updated);
-      expect(order.statusHistory).toHaveLength(2);
-      expect(order.statusHistory[1]).toMatchObject({
-        status: nuevoEstado,
-        changedById: SALES_ID,
-        note: 'Enviado por paquetería'
-      });
-      expect(order.save).toHaveBeenCalledTimes(1);
+
+      expect(response.body.message)
+        .toBe(es.orders.updated);
+
+      expect(order.statusHistory)
+        .toHaveLength(2);
+
+      expect(order.statusHistory[1])
+        .toMatchObject({
+          status: nuevoEstado,
+          changedById: SALES_ID,
+          note: 'Enviado por paquetería'
+        });
+
+      expect(order.save)
+        .toHaveBeenCalledTimes(1);
+
+    });
+
+    // NUEVA PRUEBA:
+    // Los pedidos web se administran desde F11
+
+    test('responde 409 al intentar actualizar un pedido web', async () => {
+
+      const order = {
+        ...orderDocument(),
+        channel: 'web'
+      };
+
+      jest.spyOn(Order, 'findById')
+        .mockReturnValue(query(order));
+
+      const response = await request(app)
+        .put(`/api/orders/${ORDER_ID}`)
+        .set('Accept-Language', 'es')
+        .set(auth)
+        .send({
+          status: 'cancelled',
+          note: 'Prueba'
+        });
+
+      expect(response.statusCode).toBe(409);
+
+      expect(es.orders.webOrderProtected)
+        .toEqual(expect.any(String));
+
+      expect(response.body.message)
+        .toBe(es.orders.webOrderProtected);
+
+      expect(order.statusHistory).toEqual([
+        { status: 'pending' }
+      ]);
+
+      expect(order.save)
+        .not.toHaveBeenCalled();
+
+      expect(order.populate)
+        .not.toHaveBeenCalled();
+
     });
 
     test('responde 400 con un estado inválido y no consulta la orden', async () => {
+
       const find = jest.spyOn(Order, 'findById');
 
       const response = await request(app)
         .put(`/api/orders/${ORDER_ID}`)
         .set('Accept-Language', 'es')
         .set(auth)
-        .send({ status: 'inventado' });
+        .send({
+          status: 'inventado'
+        });
 
       expect(response.statusCode).toBe(400);
-      expect(response.body.message).toBe(es.orders.invalidStatus);
+
+      expect(response.body.message)
+        .toBe(es.orders.invalidStatus);
+
       expect(find).not.toHaveBeenCalled();
+
     });
 
     test('responde 400 si manda una nota sin estado', async () => {
+
       const response = await request(app)
         .put(`/api/orders/${ORDER_ID}`)
         .set('Accept-Language', 'es')
         .set(auth)
-        .send({ note: 'Solo una nota' });
+        .send({
+          note: 'Solo una nota'
+        });
 
       expect(response.statusCode).toBe(400);
-      expect(response.body.message).toBe(es.common.invalidData);
+
+      expect(response.body.message)
+        .toBe(es.common.invalidData);
+
     });
 
     test('responde 404 si la orden no existe', async () => {
-      jest.spyOn(Order, 'findById').mockReturnValue(query(null));
+
+      jest.spyOn(Order, 'findById')
+        .mockReturnValue(query(null));
 
       const response = await request(app)
         .put(`/api/orders/${ORDER_ID}`)
         .set('Accept-Language', 'es')
         .set(auth)
-        .send({ paymentMethod: 'cash' });
+        .send({
+          paymentMethod: 'cash'
+        });
 
       expect(response.statusCode).toBe(404);
-      expect(response.body.message).toBe(es.orders.notFound);
+
+      expect(response.body.message)
+        .toBe(es.orders.notFound);
+
     });
 
     test('responde 403 a un usuario con solo permisos own', async () => {
-      const own = mockSession({ userId: USER_ID, roleId: 3, permissions: OWN_PERMISSIONS });
-      jest.spyOn(Order, 'findById').mockReturnValue(query({ _id: ORDER_ID, customerId: CUSTOMER_ID }));
-      jest.spyOn(Customer, 'findById').mockReturnValue(query({ _id: CUSTOMER_ID, userId: USER_ID }));
+
+      const own = mockSession({
+        userId: USER_ID,
+        roleId: 3,
+        permissions: OWN_PERMISSIONS
+      });
+
+      jest.spyOn(Order, 'findById')
+        .mockReturnValue(query({
+          _id: ORDER_ID,
+          customerId: CUSTOMER_ID
+        }));
+
+      jest.spyOn(Customer, 'findById')
+        .mockReturnValue(query({
+          _id: CUSTOMER_ID,
+          userId: USER_ID
+        }));
 
       const response = await request(app)
         .put(`/api/orders/${ORDER_ID}`)
         .set('Accept-Language', 'es')
         .set(own)
-        .send({ paymentMethod: 'cash' });
+        .send({
+          paymentMethod: 'cash'
+        });
 
       expect(response.statusCode).toBe(403);
-      expect(response.body.message).toBe(es.common.forbidden);
+
+      expect(response.body.message)
+        .toBe(es.common.forbidden);
+
     });
+
   });
 
+  // ==========================================
+  // DELETE /api/orders/:id
+  // ==========================================
+
   describe('DELETE /api/orders/:id', () => {
+
     test('responde 200 y elimina la orden', async () => {
-      const remove = jest
-        .spyOn(Order, 'findByIdAndDelete')
-        .mockResolvedValue({ _id: ORDER_ID });
+
+      const remove = jest.spyOn(
+        Order,
+        'findOneAndDelete'
+      ).mockResolvedValue({
+        _id: ORDER_ID
+      });
 
       const response = await request(app)
         .delete(`/api/orders/${ORDER_ID}`)
@@ -466,12 +885,29 @@ describe('Rutas de órdenes (con mocks)', () => {
         .set(auth);
 
       expect(response.statusCode).toBe(200);
-      expect(response.body.message).toBe(es.orders.deleted);
-      expect(remove).toHaveBeenCalledWith(ORDER_ID);
+
+      expect(response.body.message)
+        .toBe(es.orders.deleted);
+
+      // Solamente permite eliminar pedidos
+      // que no pertenecen al canal web
+
+      expect(remove).toHaveBeenCalledWith({
+        _id: ORDER_ID,
+        channel: {
+          $ne: 'web'
+        }
+      });
+
     });
 
     test('responde 404 si no existe', async () => {
-      jest.spyOn(Order, 'findByIdAndDelete').mockResolvedValue(null);
+
+      jest.spyOn(Order, 'findOneAndDelete')
+        .mockResolvedValue(null);
+
+      jest.spyOn(Order, 'findById')
+        .mockResolvedValue(null);
 
       const response = await request(app)
         .delete(`/api/orders/${ORDER_ID}`)
@@ -479,12 +915,68 @@ describe('Rutas de órdenes (con mocks)', () => {
         .set(auth);
 
       expect(response.statusCode).toBe(404);
-      expect(response.body.message).toBe(es.orders.notFound);
+
+      expect(response.body.message)
+        .toBe(es.orders.notFound);
+
+    });
+
+    // NUEVA PRUEBA:
+    // Impedir la eliminacion de pedidos web
+    // para proteger las reservas en PostgreSQL
+
+    test('responde 409 al intentar eliminar un pedido web', async () => {
+
+      const remove = jest.spyOn(
+        Order,
+        'findOneAndDelete'
+      ).mockResolvedValue(null);
+
+      const find = jest.spyOn(
+        Order,
+        'findById'
+      ).mockResolvedValue({
+        _id: ORDER_ID,
+        channel: 'web'
+      });
+
+      const response = await request(app)
+        .delete(`/api/orders/${ORDER_ID}`)
+        .set('Accept-Language', 'es')
+        .set(auth);
+
+      expect(response.statusCode).toBe(409);
+
+      expect(es.orders.webOrderProtected)
+        .toEqual(expect.any(String));
+
+      expect(response.body.message)
+        .toBe(es.orders.webOrderProtected);
+
+      expect(remove).toHaveBeenCalledWith({
+        _id: ORDER_ID,
+        channel: {
+          $ne: 'web'
+        }
+      });
+
+      expect(find)
+        .toHaveBeenCalledWith(ORDER_ID);
+
     });
 
     test('responde 403 a un rol sin permiso de borrar', async () => {
-      const own = mockSession({ userId: USER_ID, roleId: 3, permissions: OWN_PERMISSIONS });
-      const remove = jest.spyOn(Order, 'findByIdAndDelete');
+
+      const own = mockSession({
+        userId: USER_ID,
+        roleId: 3,
+        permissions: OWN_PERMISSIONS
+      });
+
+      const remove = jest.spyOn(
+        Order,
+        'findOneAndDelete'
+      );
 
       const response = await request(app)
         .delete(`/api/orders/${ORDER_ID}`)
@@ -492,7 +984,12 @@ describe('Rutas de órdenes (con mocks)', () => {
         .set(own);
 
       expect(response.statusCode).toBe(403);
-      expect(remove).not.toHaveBeenCalled();
+
+      expect(remove)
+        .not.toHaveBeenCalled();
+
     });
+
   });
+
 });

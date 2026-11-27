@@ -1,0 +1,7 @@
+mixin statusBadge(active)
+  if active
+    span.badge.text-bg-success
+      = __('ssr.common.active')
+  else
+    span.badge.text-bg-secondary
+      = __('ssr.common.inactive')

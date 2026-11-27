@@ -5,6 +5,9 @@ const Permission = require('./Permission');
 const Product = require('./Product');
 const ProductVariant = require('./ProductVariant');
 const Inventory = require('./Inventory');
+const CheckoutAttempt = require('./CheckoutAttempt');
+const OrderReservation = require('./OrderReservation');
+const OrderStatusOperation = require('./OrderStatusOperation');
 
 Role.hasMany(User, {foreignKey: 'role_id', as:'users'});
 
@@ -52,4 +55,15 @@ Inventory.belongsTo(ProductVariant, {
 });
 
 
-module.exports = {sequelize, User, Role, Permission, Product, ProductVariant, Inventory};
+module.exports = {
+  sequelize,
+  User,
+  Role,
+  Permission,
+  Product,
+  ProductVariant,
+  Inventory,
+  CheckoutAttempt,
+  OrderReservation,
+  OrderStatusOperation
+};

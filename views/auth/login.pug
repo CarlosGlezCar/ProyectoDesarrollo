@@ -1,0 +1,60 @@
+extends ../layouts/base
+include ../mixins/formField
+
+block body
+
+  .login-shell
+
+    .card.login-card.border-0.shadow-lg.overflow-hidden
+
+      .px-4.pt-4.pb-3.bg-dark.text-white
+
+        .login-brand.fs-3
+          | STRIDE
+          span -CO
+
+        .small.text-white-50
+          = __('ssr.auth.subtitle')
+
+      .card-body.p-4
+
+        .d-flex.justify-content-end.mb-3
+          include ../partials/language
+
+        h4.fw-bold.mb-1
+          = __('ssr.auth.title')
+
+        p.text-secondary.small.mb-4
+          = __('ssr.auth.description')
+
+        if loginError
+          .alert.alert-danger.small(role="alert")
+            = loginError
+
+        form(method="POST" action="/login")
+
+          input(type="hidden" name="next" value=nextUrl)
+
+          +formField(
+            'email',
+            __('ssr.auth.email'),
+            'email',
+            email,
+            errors.email
+          )(required autocomplete="username")
+
+          +formField(
+            'password',
+            __('ssr.auth.password'),
+            'password',
+            '',
+            errors.password
+          )(required autocomplete="current-password")
+
+          button.btn.btn-dark.w-100.py-2.mt-3.fw-semibold(type="submit")
+            = __('ssr.auth.submit')
+            i.bi.bi-arrow-right.ms-1
+
+        a.btn.btn-link.text-dark.w-100.mt-3.text-decoration-none(href="/")
+          i.bi.bi-arrow-left.me-1
+          = __('ssr.nav.store')

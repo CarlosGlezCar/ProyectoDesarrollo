@@ -1,0 +1,99 @@
+
+extends ../../layouts/admin
+
+block content
+
+  .container-fluid.p-0
+
+    .d-flex.justify-content-between.align-items-center.flex-wrap.gap-3.mb-4
+
+      p.text-muted.mb-0
+        = __('ssr.variants.description')
+
+      if can('variants', 'create', 'any')
+        a.btn.btn-primary(href='/admin/variants/new')
+          i.bi.bi-plus-lg.me-2
+          = __('ssr.variants.new')
+
+    if variants.length === 0
+
+      .card.shadow-sm
+        .card-body.text-center.py-5
+
+          i.bi.bi-box-seam.fs-1.text-muted
+
+          h5.mt-3
+            = __('ssr.variants.empty')
+
+    else
+
+      .card.shadow-sm
+
+        .table-responsive
+
+          table.table.table-hover.align-middle.mb-0
+
+            thead.table-light
+
+              tr
+                th ID
+                th SKU
+                th= __('ssr.variants.product')
+                th= __('ssr.variants.size')
+                th= __('ssr.variants.color')
+                th= __('ssr.variants.stock')
+                th= __('ssr.variants.available')
+                th= __('ssr.variants.status')
+                th= __('ssr.variants.actions')
+
+            tbody
+
+              each variant in variants
+
+                tr
+
+                  td= variant.id
+
+                  td
+                    code= variant.sku
+
+                  td
+                    if variant.product
+                      .fw-semibold= variant.product.name
+                    else
+                      span.text-muted
+                        = __('ssr.variants.productMissing')
+
+                  td= variant.size
+
+                  td= variant.color
+
+                  td= variant.inventory ? variant.inventory.stock : 0
+
+                  td
+                    - const available = variant.inventory ? Number(variant.inventory.stock) - Number(variant.inventory.reserved) : 0
+
+                    if available > 0
+                      span.text-success.fw-bold= available
+                    else
+                      span.text-danger.fw-bold= available
+
+                  td
+                    if variant.active
+                      span.badge.text-bg-success
+                        = __('ssr.common.active')
+                    else
+                      span.badge.text-bg-secondary
+                        = __('ssr.common.inactive')
+
+                  td
+                    if can('variants', 'update', 'any')
+
+                      a.btn.btn-outline-primary.btn-sm(
+                        href='/admin/variants/' + variant.id + '/edit'
+                      )
+                        i.bi.bi-pencil.me-1
+                        = __('ssr.common.edit')
+
+                    else
+                      span.text-muted —

@@ -1,12 +1,17 @@
 function home(req, res) {
   return res.render('index', {
-    title: req.__('views.home.title'),
-    description: req.__('views.home.description')
+    title: req.__('ssr.home.title'),
+    description: req.__('ssr.home.description')
   });
 }
 
 function healthCheck(req, res) {
-  return res.status(200).json({ status: 'UP' });
+  return res.status(200).json({
+    status: 'UP'
+  });
 }
 
-module.exports = { home, healthCheck };
+module.exports = {
+  home,
+  healthCheck
+};

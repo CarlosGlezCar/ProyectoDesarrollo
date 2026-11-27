@@ -1,5 +1,5 @@
-const Permission = require('../models/sql/Permission');
 const { isSqlId, readBody, checkTypes } = require('../utils/validation');
+const roleService = require('../services/role.service');
 
 const keyPattern = /^[a-z][a-z0-9_-]*:(create|read|update|delete):(own|any)$/;
 
@@ -39,7 +39,7 @@ async function create(req, res, next) {
       });
     }
 
-    const permission = await Permission.create(data);
+    const permission = await roleService.createPermission(data);
     return res.status(201).json({
       message: req.__('permissions.created'), data: permission
     });
@@ -50,7 +50,7 @@ async function create(req, res, next) {
 
 async function list(req, res, next) {
   try {
-    const permissions = await Permission.findAll();
+    const permissions = await roleService.listPermissions();
     return res.json({
       message: req.__('permissions.list'), data: permissions
     });
@@ -63,7 +63,7 @@ async function find(req, res, next) {
   try {
     if (!validId(req, res)) return;
 
-    const permission = await Permission.findByPk(Number(req.params.id));
+    const permission = await roleService.findPermissionById(Number(req.params.id));
     if (!permission) {
       return res.status(404).json({
         message: req.__('permissions.notFound'), data: null
@@ -89,14 +89,13 @@ async function update(req, res, next) {
       });
     }
 
-    const permission = await Permission.findByPk(Number(req.params.id));
+    const permission = await roleService.updatePermission(Number(req.params.id), data);
     if (!permission) {
       return res.status(404).json({
         message: req.__('permissions.notFound'), data: null
       });
     }
 
-    await permission.update(data);
     return res.json({
       message: req.__('permissions.updated'), data: permission
     });
@@ -109,14 +108,13 @@ async function destroy(req, res, next) {
   try {
     if (!validId(req, res)) return;
 
-    const permission = await Permission.findByPk(Number(req.params.id));
+    const permission = await roleService.deletePermission(Number(req.params.id));
     if (!permission) {
       return res.status(404).json({
         message: req.__('permissions.notFound'), data: null
       });
     }
 
-    await permission.destroy();
     return res.json({
       message: req.__('permissions.deleted'), data: permission
     });

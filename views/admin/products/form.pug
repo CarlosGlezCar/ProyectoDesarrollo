@@ -1,0 +1,160 @@
+
+extends ../../layouts/admin
+
+block content
+
+  .container-fluid.p-0
+
+    .d-flex.justify-content-between.align-items-center.mb-4
+
+      div
+        p.text-muted.mb-0= __('ssr.products.formDescription')
+
+      a.btn.btn-outline-secondary(href='/admin/products')
+        i.bi.bi-arrow-left.me-2
+        = __('ssr.common.cancel')
+
+    form(method='POST' action=formAction)
+
+      .card.shadow-sm
+
+        .card-body
+
+          .row.g-3
+
+            // Nombre
+            .col-md-6
+
+              label.form-label(for='name')
+                = __('ssr.products.name')
+
+              input.form-control(
+                id='name'
+                name='name'
+                type='text'
+                value=product.name
+                maxlength='150'
+                required
+                class=(errors.name ? 'is-invalid' : '')
+              )
+
+              if errors.name
+                .invalid-feedback= errors.name
+
+            // Marca
+            .col-md-6
+
+              label.form-label(for='brand')
+                = __('ssr.products.brand')
+
+              input.form-control(
+                id='brand'
+                name='brand'
+                type='text'
+                value=product.brand
+                maxlength='100'
+                required
+                class=(errors.brand ? 'is-invalid' : '')
+              )
+
+              if errors.brand
+                .invalid-feedback= errors.brand
+
+            // Categoría
+            .col-md-6
+
+              label.form-label(for='categoryId')
+                = __('ssr.products.category')
+
+              select.form-select(
+                id='categoryId'
+                name='categoryId'
+                required
+                class=(errors.categoryId ? 'is-invalid' : '')
+              )
+
+                option(value='')
+                  = __('ssr.products.selectCategory')
+
+                each category in categories
+
+                  option(
+                    value=category.id
+                    selected=(product.categoryId === String(category.id))
+                  )= __('ssr.categories.' + category.key)
+
+              if errors.categoryId
+                .invalid-feedback= errors.categoryId
+
+            // Precio
+            .col-md-6
+
+              label.form-label(for='price')
+                = __('ssr.products.price')
+
+              input.form-control(
+                id='price'
+                name='price'
+                type='number'
+                min='0'
+                max='99999999.99'
+                step='0.01'
+                value=product.price
+                required
+                class=(errors.price ? 'is-invalid' : '')
+              )
+
+              if errors.price
+                .invalid-feedback= errors.price
+
+            // Descripción
+            .col-12
+
+              label.form-label(for='description')
+                = __('ssr.products.descriptionField')
+
+              textarea.form-control(
+                id='description'
+                name='description'
+                rows='5'
+                required
+                class=(errors.description ? 'is-invalid' : '')
+              )= product.description
+
+              if errors.description
+                .invalid-feedback= errors.description
+
+            // Estado
+            .col-md-6
+
+              label.form-label(for='active')
+                = __('ssr.products.status')
+
+              select.form-select(
+                id='active'
+                name='active'
+                required
+                class=(errors.active ? 'is-invalid' : '')
+              )
+
+                option(
+                  value='true'
+                  selected=(product.active === 'true')
+                )= __('ssr.common.active')
+
+                option(
+                  value='false'
+                  selected=(product.active === 'false')
+                )= __('ssr.common.inactive')
+
+              if errors.active
+                .invalid-feedback= errors.active
+
+        .card-footer.bg-white.d-flex.justify-content-end.gap-2
+
+          a.btn.btn-outline-secondary(href='/admin/products')
+            = __('ssr.common.cancel')
+
+          button.btn.btn-primary(type='submit')
+            i.bi.bi-check-lg.me-2
+            = isEdit ? __('ssr.products.update') : __('ssr.products.create')

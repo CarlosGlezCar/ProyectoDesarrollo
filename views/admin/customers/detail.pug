@@ -1,0 +1,217 @@
+
+extends ../../layouts/admin
+
+include ../../mixins/orderStatus
+
+block content
+
+  .container-fluid.p-0
+
+    a.btn.btn-outline-secondary.mb-4(
+      href='/admin/customers'
+    )
+
+      i.bi.bi-arrow-left.me-2
+
+      = __('ssr.adminCustomers.back')
+
+    .row.g-4
+
+      //- INFORMACION DEL CLIENTE
+
+      .col-lg-4
+
+        .card.p-4.mb-4
+
+          .text-center.mb-4
+
+            i.bi.bi-person-circle.display-3.text-secondary
+
+            h5.fw-bold.mt-3
+
+              = customer.email
+
+          hr
+
+          small.text-secondary.d-block
+
+            = __('ssr.adminCustomers.customerId')
+
+          code.d-block.mb-3
+
+            = String(customer._id)
+
+          small.text-secondary.d-block
+
+            = __('ssr.adminCustomers.userId')
+
+          p.fw-semibold= customer.userId
+
+          small.text-secondary.d-block
+
+            = __('ssr.adminCustomers.email')
+
+          p= customer.email
+
+          small.text-secondary.d-block
+
+            = __('ssr.adminCustomers.phone')
+
+          p= customer.phone || '—'
+
+          small.text-secondary.d-block
+
+            = __('ssr.adminCustomers.registeredAt')
+
+          if customer.createdAt
+
+            p= formatDate(customer.createdAt)
+
+          else
+
+            p —
+
+        .card.p-4
+
+          .d-flex.align-items-center.gap-3
+
+            i.bi.bi-receipt.fs-2.text-primary
+
+            div
+
+              small.text-secondary
+
+                = __('ssr.adminCustomers.totalOrders')
+
+              h3.fw-bold.mb-0= orders.length
+
+      .col-lg-8
+
+        //- DIRECCIONES EMBEBIDAS
+
+        .card.p-4.mb-4
+
+          h5.fw-bold.mb-4
+
+            i.bi.bi-geo-alt.me-2
+
+            = __('ssr.adminCustomers.addresses')
+
+          if customer.addresses && customer.addresses.length
+
+            .row.g-3
+
+              each address in customer.addresses
+
+                .col-md-6
+
+                  .border.rounded.p-3.h-100
+
+                    if address.type === 'shipping'
+
+                      span.badge.text-bg-primary.mb-3
+
+                        = __('ssr.adminCustomers.shipping')
+
+                    else if address.type === 'billing'
+
+                      span.badge.text-bg-secondary.mb-3
+
+                        = __('ssr.adminCustomers.billing')
+
+                    p.fw-semibold.mb-2
+
+                      = address.street + ' ' + address.number
+
+                    p.mb-1
+
+                      = address.city + ', ' + address.state
+
+                    p.mb-0
+
+                      = address.postalCode + ', ' + address.country
+
+          else
+
+            p.text-secondary.mb-0
+
+              = __('ssr.adminCustomers.noAddresses')
+
+        //- PEDIDOS ASOCIADOS
+
+        .card.p-4
+
+          h5.fw-bold.mb-4
+
+            i.bi.bi-receipt.me-2
+
+            = __('ssr.adminCustomers.customerOrders')
+
+          if orders.length
+
+            .table-responsive
+
+              table.table.table-hover.align-middle
+
+                thead.table-light
+
+                  tr
+
+                    th= __('ssr.myOrders.orderNumber')
+                    th= __('ssr.dashboard.date')
+                    th= __('ssr.cart.total')
+                    th= __('ssr.myOrders.status')
+                    th= __('ssr.adminCustomers.actions')
+
+                tbody
+
+                  each order in orders
+
+                    - const history = order.statusHistory || []
+                    - const status = history.length ? history[history.length - 1].status : 'unknown'
+
+                    tr
+
+                      td
+
+                        code= String(order._id)
+
+                      td
+
+                        if order.createdAt
+
+                          = formatDate(order.createdAt)
+
+                        else
+
+                          | —
+
+                      td.fw-semibold
+
+                        = formatMoney(String(order.totals.total))
+
+                      td
+
+                        +orderStatus(status)
+
+                      td
+
+                        if can('orders', 'read', 'any')
+
+                          a.btn.btn-outline-dark.btn-sm(
+                            href='/admin/orders/' + String(order._id)
+                          )
+
+                            i.bi.bi-eye.me-1
+
+                            = __('ssr.myOrders.viewDetail')
+
+                        else
+
+                          | —
+
+          else
+
+            p.text-secondary.mb-0
+
+              = __('ssr.adminCustomers.noOrders')

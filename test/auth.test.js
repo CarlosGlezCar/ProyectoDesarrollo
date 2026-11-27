@@ -1,6 +1,7 @@
 const request = require('supertest');
 const jwt = require('jsonwebtoken');
 const config = require('config');
+const productService = require('../services/product.service');
 
 jest.mock('../utils/passwords', () => ({
   verifyPassword: jest.fn()
@@ -61,8 +62,22 @@ describe('GET / y GET /health', () => {
   });
 
   test('GET / responde 200 sin autenticación', async () => {
-    const res = await request(app).get('/');
-    expect(res.status).toBe(200);
+    const featured = jest.spyOn(productService, 'featured')
+      .mockResolvedValue([]);
+
+    try {
+      const res = await request(app).get('/');
+
+      expect(res.status).toBe(200);
+
+      expect(res.headers['content-type'])
+        .toContain('text/html');
+
+      expect(featured).toHaveBeenCalled();
+
+    } finally {
+      featured.mockRestore();
+    }
   });
 });
 
