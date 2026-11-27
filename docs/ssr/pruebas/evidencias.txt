@@ -1,0 +1,23 @@
+﻿┌─────────┬──────────────────────┬─────────────────┬───────────────────┬───────────┐
+│ (index) │ funcionalidad        │ comparacion.png │ codigo-fuente.png │ movil.png │
+├─────────┼──────────────────────┼─────────────────┼───────────────────┼───────────┤
+│ 0       │ 'F01-auth'           │ 'OK'            │ 'OK'              │ 'OK'      │
+│ 1       │ 'F02-catalog'        │ 'OK'            │ 'OK'              │ 'OK'      │
+│ 2       │ 'F03-product-detail' │ 'OK'            │ 'OK'              │ 'OK'      │
+│ 3       │ 'F04-cart'           │ 'OK'            │ 'OK'              │ 'OK'      │
+│ 4       │ 'F05-checkout'       │ 'OK'            │ 'OK'              │ 'OK'      │
+│ 5       │ 'F06-my-orders'      │ 'OK'            │ 'OK'              │ 'OK'      │
+│ 6       │ 'F07-dashboard'      │ 'OK'            │ 'OK'              │ 'OK'      │
+│ 7       │ 'F08-products'       │ 'OK'            │ 'OK'              │ 'OK'      │
+│ 8       │ 'F09-variants'       │ 'OK'            │ 'OK'              │ 'OK'      │
+│ 9       │ 'F10-inventory'      │ 'OK'            │ 'OK'              │ 'OK'      │
+│ 10      │ 'F11-orders'         │ 'OK'            │ 'OK'              │ 'OK'      │
+│ 11      │ 'F12-customers'      │ 'OK'            │ 'OK'              │ 'OK'      │
+│ 12      │ 'F13-users'          │ 'OK'            │ 'OK'              │ 'OK'      │
+│ 13      │ 'F14-roles'          │ 'OK'            │ 'OK'              │ 'OK'      │
+└─────────┴──────────────────────┴─────────────────┴───────────────────┴───────────┘
+
+=== EVIDENCIAS SSR ===
+Funcionalidades completas: 14/14
+Evidencias obligatorias faltantes: 0
+Capturas moviles: 14/14
