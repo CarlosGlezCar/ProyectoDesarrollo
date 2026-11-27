@@ -1,0 +1,220 @@
+
+extends ../layouts/store
+
+block content
+
+  .container.py-5
+
+    .tiny.text-uppercase.mb-2
+      | STRIDE-CO / #{__('ssr.nav.cart')}
+
+    h1.fw-bold.mb-4
+      = __('ssr.cart.title')
+
+    if cartError
+
+      .alert.alert-danger(role='alert')
+        = cartError
+
+    if attempt && attempt.adding
+
+      form.card.p-3.mb-4(method='POST' action='/cart/items')
+
+        input(type='hidden' name='variantId' value=attempt.variantId)
+
+        label.form-label(for='retryQuantity')
+          = __('ssr.cart.quantity')
+
+        input.form-control.is-invalid(
+          id='retryQuantity'
+          name='quantity'
+          type='text'
+          inputmode='numeric'
+          value=attempt.quantity
+          required
+        )
+
+        .invalid-feedback= cartError
+
+        button.btn.btn-dark.mt-3(type='submit')
+          = __('ssr.cart.add')
+
+    .row.g-4
+
+      //- Articulos
+
+      .col-lg-8
+
+        .card.p-4
+
+          if cart.lines.length === 0
+
+            .text-center.py-5
+
+              i.bi.bi-bag.fs-1.text-secondary
+
+              h4.mt-3
+                = __('ssr.cart.empty')
+
+              p.text-secondary
+                = __('ssr.cart.emptyDescription')
+
+              a.btn.btn-dark(href='/products')
+                = __('ssr.cart.explore')
+
+          else
+
+            each line in cart.lines
+
+              .border-bottom.py-4
+
+                .row.g-3.align-items-center
+
+                  .col-md-2
+
+                    .shoe-art.rounded-3
+
+                      span.fs-1 👟
+
+                  .col-md-6
+
+                    if line.name
+
+                      a.text-decoration-none.text-dark(
+                        href='/products/' + line.productId
+                      )
+
+                        h5.fw-bold.mb-1= line.name
+
+                      .small.text-secondary
+
+                        = line.sku
+
+                        |  · #{__('ssr.variants.size')}: #{line.size}
+
+                        |  · #{line.color}
+
+                      p.fw-semibold.mt-2.mb-1
+                        = formatMoney(line.unitPriceCents / 100)
+
+                      small.text-secondary
+                        = __('ssr.cart.available') + ': ' + line.available
+
+                    else
+
+                      h5= __('ssr.cart.unavailable')
+
+                    if !line.valid
+
+                      p.text-danger.small.mt-2.mb-0
+                        = __('ssr.cart.reviewStock')
+
+                  .col-md-4
+
+                    - const editing = attempt && !attempt.adding && attempt.variantId === line.variantId
+
+                    if line.name
+
+                      form(
+                        method='POST'
+                        action='/cart/items/' + line.variantId
+                      )
+
+                        label.form-label(
+                          for='quantity-' + line.variantId
+                        )= __('ssr.cart.quantity')
+
+                        .input-group
+
+                          input.form-control(
+                            id='quantity-' + line.variantId
+                            name='quantity'
+                            type='text'
+                            inputmode='numeric'
+                            value=(editing ? attempt.quantity : line.quantity)
+                            class=(editing ? 'is-invalid' : '')
+                            required
+                          )
+
+                          button.btn.btn-outline-dark(type='submit')
+                            i.bi.bi-check-lg
+                            span.visually-hidden= __('ssr.cart.update')
+
+                        if editing
+
+                          .text-danger.small.mt-1
+                            = cartError
+
+                    form.mt-2(
+                      method='POST'
+                      action='/cart/items/' + line.variantId + '/delete'
+                    )
+
+                      button.btn.btn-outline-danger.btn-sm.w-100(type='submit')
+
+                        i.bi.bi-trash.me-1
+
+                        = __('ssr.cart.remove')
+
+                    if line.name
+
+                      p.fw-bold.text-end.mt-2.mb-0
+                        = formatMoney(line.subtotalCents / 100)
+
+            a.btn.btn-outline-dark.mt-4(href='/products')
+
+              i.bi.bi-arrow-left.me-2
+
+              = __('ssr.cart.continueShopping')
+
+      //- Resumen
+
+      .col-lg-4
+
+        .card.p-4
+
+          h5.fw-bold.mb-4
+            = __('ssr.cart.summary')
+
+          .d-flex.justify-content-between.mb-3
+
+            span= __('ssr.cart.items')
+
+            strong= cart.count
+
+          .d-flex.justify-content-between.mb-3
+
+            span= __('ssr.cart.subtotal')
+
+            strong= formatMoney(cart.subtotalCents / 100)
+
+          .d-flex.justify-content-between.mb-3
+
+            span= __('ssr.cart.shipping')
+
+            span.text-success= __('ssr.cart.freeShipping')
+
+          hr
+
+          .d-flex.justify-content-between.fs-5
+
+            strong= __('ssr.cart.total')
+
+            strong= formatMoney(cart.totalCents / 100)
+
+          if cart.canCheckout
+
+            a.btn.btn-dark.w-100.mt-4(href='/checkout')
+
+              i.bi.bi-arrow-right.me-2
+
+              = __('ssr.cart.checkout')
+
+          else
+
+            button.btn.btn-dark.w-100.mt-4(
+              type='button'
+              disabled
+            )
+
+              = __('ssr.cart.checkout')

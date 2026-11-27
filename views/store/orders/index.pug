@@ -1,0 +1,119 @@
+
+extends ../../layouts/store
+
+include ../../mixins/orderStatus
+
+block content
+
+  .container.py-5
+
+    .tiny.text-uppercase.mb-2
+
+      | STRIDE-CO / #{__('ssr.myOrders.title')}
+
+    h1.fw-bold.mb-2
+
+      = __('ssr.myOrders.title')
+
+    p.text-secondary.mb-4
+
+      = __('ssr.myOrders.description')
+
+    if orders.length === 0
+
+      .card.p-5.text-center
+
+        i.bi.bi-receipt.fs-1.text-secondary
+
+        h4.fw-bold.mt-3
+
+          = __('ssr.myOrders.empty')
+
+        p.text-secondary
+
+          = __('ssr.myOrders.emptyDescription')
+
+        div
+
+          a.btn.btn-dark(href='/products')
+
+            i.bi.bi-bag.me-2
+
+            = __('ssr.cart.explore')
+
+    else
+
+      each order in orders
+
+        - const history = order.statusHistory || []
+        - const status = history.length ? history[history.length - 1].status : 'unknown'
+
+        .card.p-4.mb-3.shadow-sm
+
+          .row.g-3.align-items-center
+
+            .col-md-5
+
+              small.text-secondary.d-block
+
+                = __('ssr.myOrders.orderNumber')
+
+              code= String(order._id)
+
+              if order.createdAt
+
+                p.text-secondary.small.mt-2.mb-0
+
+                  i.bi.bi-calendar.me-1
+
+                  = formatDate(order.createdAt)
+
+            .col-md-2
+
+              small.text-secondary.d-block.mb-1
+
+                = __('ssr.myOrders.status')
+
+              +orderStatus(status)
+
+            .col-md-2
+
+              small.text-secondary.d-block
+
+                = __('ssr.cart.total')
+
+              strong.fs-5
+
+                = formatMoney(String(order.totals.total))
+
+            .col-md-3
+
+              a.btn.btn-outline-dark.w-100(
+                href='/my/orders/' + String(order._id)
+              )
+
+                = __('ssr.myOrders.viewDetail')
+
+                i.bi.bi-arrow-right.ms-2
+
+          hr
+
+          each item in order.items
+
+            .d-flex.align-items-center.gap-3.mb-2
+
+              span.fs-3 👟
+
+              div
+
+                .fw-semibold
+
+                  = item.name || ('#' + item.productId)
+
+                if item.sku
+
+                  small.text-secondary.d-block= item.sku
+
+                small.text-secondary
+
+                  = __('ssr.cart.quantity') + ': ' + item.quantity

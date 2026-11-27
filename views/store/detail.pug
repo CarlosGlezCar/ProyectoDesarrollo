@@ -1,0 +1,159 @@
+
+extends ../layouts/store
+
+block content
+
+  .container.py-5
+
+    a.btn.btn-link.text-dark.text-decoration-none.p-0.mb-4(
+      href="/products?lang=" + locale
+    )
+      i.bi.bi-arrow-left.me-2
+      = __('ssr.detail.backToCatalog')
+
+    .row.g-5.align-items-start
+
+      //- IMAGEN DEL PRODUCTO
+
+      .col-lg-6
+
+        .shoe-art.product-detail-art.rounded-4
+
+          span.shoe 👟
+
+      //- INFORMACION PRINCIPAL
+
+      .col-lg-6
+
+        .tiny.text-uppercase.fw-bold
+
+          = category + ' / ' + product.brand
+
+        h1.fw-black.mt-3
+          = product.name
+
+        .detail-price.mt-3
+          = formatMoney(product.price)
+
+        p.text-secondary.py-3
+          = product.description
+
+        hr
+
+        h5.fw-bold.mb-3
+          = __('ssr.detail.variants')
+
+        //- TABLA DE VARIANTES
+
+        if variants.length
+
+          .variant-table
+
+            .table-responsive
+
+              table.table.table-hover.align-middle.mb-0
+
+                thead.table-light
+
+                  tr
+                    th SKU
+                    th= __('ssr.detail.size')
+                    th= __('ssr.detail.color')
+                    th= __('ssr.detail.available')
+
+                tbody
+
+                  each variant in variants
+
+                    tr
+
+                      td
+                        code= variant.sku
+
+                      td
+                        = variant.size
+
+                      td
+                        = variant.color
+
+                      td
+
+                        if variant.available > 0
+
+                          span.variant-available
+                            = variant.available
+                            |  ✓
+
+                        else
+
+                          span.variant-unavailable
+                            = __('ssr.detail.outOfStock')
+
+        else
+
+          .alert.alert-secondary
+            = __('ssr.detail.noVariants')
+
+        hr
+
+        //- F4 - FORMULARIO PARA AGREGAR A LA BOLSA
+
+        if variants.some(variant => variant.available > 0)
+
+          form.mt-4(method='POST' action='/cart/items')
+
+            label.form-label.fw-semibold(for='variantId')
+              = __('ssr.cart.selectVariant')
+
+            select.form-select.mb-3(
+              id='variantId'
+              name='variantId'
+              required
+            )
+
+              each variant in variants
+
+                option(
+                  value=variant.id
+                  disabled=(variant.available <= 0)
+                )
+                  = variant.sku + ' · ' + variant.size + ' · ' + variant.color + ' — ' + variant.available + ' ' + __('ssr.cart.available')
+
+            label.form-label.fw-semibold(for='quantity')
+              = __('ssr.cart.quantity')
+
+            input.form-control.mb-3(
+              id='quantity'
+              name='quantity'
+              type='number'
+              min='1'
+              max='99'
+              step='1'
+              value='1'
+              required
+            )
+
+            .d-grid.gap-2
+
+              button.btn.btn-dark.btn-lg(type='submit')
+
+                i.bi.bi-bag-plus.me-2
+
+                = __('ssr.cart.add')
+
+        else
+
+          .d-grid.gap-2
+
+            button.btn.btn-dark.btn-lg(
+              type='button'
+              disabled
+            )
+
+              i.bi.bi-bag-plus.me-2
+
+              = __('ssr.cart.unavailable')
+
+        p.tiny.text-secondary.text-center.mt-3
+
+          = __('ssr.detail.shipping')

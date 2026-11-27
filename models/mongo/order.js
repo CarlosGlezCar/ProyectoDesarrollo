@@ -62,8 +62,28 @@ const shippingAddressSchema = new mongoose.Schema({
 
 const itemSchema = new mongoose.Schema({
     productId: positiveInteger(),
+
+    variantId: {
+        ...positiveInteger(),
+        required: false
+    },
+
+    sku: {
+        type: String,
+        trim: true,
+        maxlength: 100
+    },
+
+    name: {
+        type: String,
+        trim: true,
+        maxlength: 150
+    },
+
     quantity: positiveInteger(),
+
     unitPrice: money()
+
 }, { _id: false });
 
 const statusSchema = new mongoose.Schema({
@@ -83,7 +103,18 @@ const orderSchema = new mongoose.Schema({
         ref: 'Customer',
         required: true
     },
-    salesPersonId: positiveInteger(),
+    channel: {
+        type: String,
+        enum: ['api', 'web']
+    },
+
+    salesPersonId: {
+        ...positiveInteger(),
+
+        required: function () {
+                return this.channel !== 'web';
+        }
+    },
     paymentMethod: {
         type: String,
         required: true,
@@ -115,6 +146,18 @@ const orderSchema = new mongoose.Schema({
 });
 
 orderSchema.pre('validate', function () {
+    // Los pedidos web deben identificar cada variante
+    if (this.channel === 'web') {
+        for (const [index, item] of (this.items || []).entries()) {
+            if (!item || !item.variantId) {
+                this.invalidate(
+                    `items.${index}.variantId`,
+                    'La variante es obligatoria en pedidos web.'
+                );
+            }
+        }
+    }
+
     if (!this.totals) return;
 
     const amounts = ['subtotal', 'shipping', 'discount', 'total']
