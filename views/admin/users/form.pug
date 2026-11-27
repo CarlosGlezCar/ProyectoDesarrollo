@@ -1,0 +1,116 @@
+
+extends ../../layouts/admin
+
+include ../../mixins/formField
+
+block content
+
+  .container-fluid.p-0
+
+    a.btn.btn-outline-secondary.mb-4(href='/admin/users')
+
+      i.bi.bi-arrow-left.me-2
+
+      = __('ssr.adminUsers.back')
+
+    .row.justify-content-center
+
+      .col-xl-8
+
+        .card.p-4
+
+          h5.fw-bold.mb-4
+
+            = editing ? __('ssr.adminUsers.editTitle') : __('ssr.adminUsers.newTitle')
+
+          if errors.general
+
+            .alert.alert-danger(role='alert')
+
+              = errors.general
+
+          form(
+            method='POST'
+            action=(editing ? '/admin/users/' + user.id : '/admin/users')
+            autocomplete='off'
+          )
+
+            .row
+
+              .col-md-6
+
+                +formField('name', __('ssr.adminUsers.name'), 'text', values.name, errors.name)(required maxlength='100')
+
+              .col-md-6
+
+                +formField('lastName', __('ssr.adminUsers.lastName'), 'text', values.lastName, errors.lastName)(required maxlength='100')
+
+            +formField('email', __('ssr.adminUsers.email'), 'email', values.email, errors.email)(required maxlength='150')
+
+            .mb-3
+
+              label.form-label(for='roleId')
+
+                = __('ssr.adminUsers.role')
+
+              select.form-select(
+                id='roleId'
+                name='roleId'
+                required
+                class=(errors.roleId ? 'is-invalid' : '')
+              )
+
+                option(value='')
+
+                  = __('ssr.adminUsers.selectRole')
+
+                each role in roles
+
+                  option(
+                    value=role.id
+                    selected=(String(values.roleId) === String(role.id))
+                  )= role.name
+
+              if errors.roleId
+
+                .invalid-feedback
+
+                  = errors.roleId
+
+            hr
+
+            +formField('password', __('ssr.adminUsers.password'), 'password', '', errors.password)(required=!editing minlength='8' maxlength='72' autocomplete='new-password')
+
+            if editing
+
+              p.small.text-secondary
+
+                = __('ssr.adminUsers.keepPassword')
+
+            else
+
+              p.small.text-secondary
+
+                = __('ssr.adminUsers.passwordHelp')
+
+            if editing
+
+              .alert.alert-secondary
+
+                = __('ssr.adminUsers.status') + ': '
+
+                strong
+
+                  = user.active ? __('ssr.common.active') : __('ssr.common.inactive')
+
+            .d-flex.flex-wrap.gap-2.justify-content-end.mt-4
+
+              a.btn.btn-outline-secondary(href='/admin/users')
+
+                = __('ssr.common.cancel')
+
+              button.btn.btn-dark(type='submit')
+
+                i.bi.bi-check-circle.me-2
+
+                = __('ssr.common.save')
