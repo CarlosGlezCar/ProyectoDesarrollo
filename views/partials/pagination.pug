@@ -1,0 +1,46 @@
+if totalPages > 1 || page > 1
+
+  nav.mt-5(aria-label=__('ssr.catalog.pagination'))
+
+    ul.pagination.justify-content-center.flex-wrap
+
+      li.page-item(class=(page <= 1 ? 'disabled' : ''))
+
+        if page > 1
+
+          a.page-link(href=pageLink(Math.min(page - 1, totalPages)))
+            = __('ssr.common.previous')
+
+        else
+
+          span.page-link
+            = __('ssr.common.previous')
+
+      - const firstPage = Math.max(1, Math.min(page, totalPages) - 2)
+      - const lastPage = Math.min(totalPages, firstPage + 4)
+
+      each number in Array.from({ length: lastPage - firstPage + 1 }, (_, i) => firstPage + i)
+
+        li.page-item(class=(number === page ? 'active' : ''))
+
+          if number === page
+
+            span.page-link(aria-current="page")
+              = number
+
+          else
+
+            a.page-link(href=pageLink(number))
+              = number
+
+      li.page-item(class=(page >= totalPages ? 'disabled' : ''))
+
+        if page < totalPages
+
+          a.page-link(href=pageLink(page + 1))
+            = __('ssr.common.next')
+
+        else
+
+          span.page-link
+            = __('ssr.common.next')

@@ -1,5 +1,48 @@
-extends layout
+extends layouts/store
 
 block content
-  h1= title
-  p= description
+
+  section.hero
+
+    .container
+
+      .col-lg-7
+
+        span.badge.text-bg-light.mb-3
+          = __('ssr.home.collection')
+
+        h1
+          = __('ssr.home.heroTitle')
+          br
+          span.hero-highlight
+            = __('ssr.home.heroHighlight')
+
+        p.fs-5.opacity-75
+          = __('ssr.home.description')
+
+        a.btn.btn-lime.btn-lg(href="#featured")
+          = __('ssr.home.explore')
+          i.bi.bi-arrow-right.ms-2
+
+  section.container.py-5#featured
+
+    .d-flex.justify-content-between.align-items-end.mb-4
+
+      div
+
+        span.text-uppercase.tiny.fw-bold
+          = __('ssr.home.selected')
+
+        h2.fw-bold.mb-0
+          = __('ssr.home.featured')
+
+    .row.g-4
+
+      .col-12
+
+        .store-panel.text-center.py-5
+
+          i.bi.bi-box-seam.display-4.text-secondary
+
+          p.text-secondary.mt-3.mb-0
+            = __('ssr.home.comingSoon')
