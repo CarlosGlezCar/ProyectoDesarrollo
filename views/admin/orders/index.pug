@@ -1,0 +1,141 @@
+
+extends ../../layouts/admin
+
+include ../../mixins/orderStatus
+
+block content
+
+  .container-fluid.p-0
+
+    p.text-secondary.mb-4
+      = __('ssr.adminOrders.description')
+
+    //- FILTRO DE ESTADO
+
+    .card.p-3.mb-4
+
+      form.row.g-3.align-items-end(method='GET' action='/admin/orders')
+
+        .col-md-6
+
+          label.form-label(for='status')
+            = __('ssr.adminOrders.filterStatus')
+
+          select.form-select(
+            id='status'
+            name='status'
+          )
+
+            option(value='')
+              = __('ssr.adminOrders.allStatuses')
+
+            each status in statuses
+
+              option(
+                value=status
+                selected=(selectedStatus === status)
+              )= __('ssr.dashboard.status.' + status)
+
+        .col-md-3
+
+          button.btn.btn-dark.w-100(type='submit')
+
+            i.bi.bi-funnel.me-2
+
+            = __('ssr.adminOrders.filter')
+
+        .col-md-3
+
+          a.btn.btn-outline-secondary.w-100(href='/admin/orders')
+
+            = __('ssr.adminOrders.clear')
+
+    if error
+
+      .alert.alert-danger(role='alert')
+
+        = error
+
+    //- LISTADO DE PEDIDOS
+
+    .card.shadow-sm
+
+      if orders.length === 0
+
+        .card-body.text-center.py-5
+
+          i.bi.bi-receipt.fs-1.text-secondary
+
+          h5.mt-3
+
+            = __('ssr.adminOrders.empty')
+
+      else
+
+        .table-responsive
+
+          table.table.table-hover.align-middle.mb-0
+
+            thead.table-light
+
+              tr
+
+                th= __('ssr.myOrders.orderNumber')
+                th= __('ssr.adminOrders.customer')
+                th= __('ssr.dashboard.date')
+                th= __('ssr.cart.total')
+                th= __('ssr.myOrders.status')
+                th= __('ssr.adminOrders.actions')
+
+            tbody
+
+              each order in orders
+
+                - const history = order.statusHistory || []
+                - const status = history.length ? history[history.length - 1].status : 'unknown'
+
+                tr
+
+                  td
+
+                    code= String(order._id)
+
+                  td
+
+                    if order.customerId && order.customerId.email
+
+                      = order.customerId.email
+
+                    else
+
+                      span.text-secondary
+
+                        = __('ssr.adminOrders.customerMissing')
+
+                  td
+
+                    if order.createdAt
+
+                      = formatDate(order.createdAt)
+
+                    else
+
+                      | —
+
+                  td.fw-semibold
+
+                    = formatMoney(String(order.totals.total))
+
+                  td
+
+                    +orderStatus(status)
+
+                  td
+
+                    a.btn.btn-outline-dark.btn-sm(
+                      href='/admin/orders/' + String(order._id)
+                    )
+
+                      i.bi.bi-eye.me-1
+
+                      = __('ssr.myOrders.viewDetail')

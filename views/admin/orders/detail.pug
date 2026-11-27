@@ -1,0 +1,331 @@
+
+extends ../../layouts/admin
+
+include ../../mixins/orderStatus
+
+block content
+
+  - const history = order.statusHistory || []
+  - const currentStatus = history.length ? history[history.length - 1].status : 'unknown'
+
+  .container-fluid.p-0
+
+    a.btn.btn-outline-secondary.mb-4(href='/admin/orders')
+
+      i.bi.bi-arrow-left.me-2
+
+      = __('ssr.adminOrders.back')
+
+    .d-flex.flex-wrap.align-items-center.justify-content-between.mb-4.gap-3
+
+      div
+
+        h4.fw-bold
+
+          = __('ssr.myOrders.orderNumber')
+
+        code= String(order._id)
+
+        if order.createdAt
+
+          p.text-secondary.mt-2.mb-0
+
+            = formatDate(order.createdAt)
+
+      +orderStatus(currentStatus)
+
+    .row.g-4
+
+      .col-lg-8
+
+        //- CLIENTE Y DIRECCION
+
+        .card.p-4.mb-4
+
+          .row.g-4
+
+            .col-md-6
+
+              h5.fw-bold.mb-3
+
+                i.bi.bi-person.me-2
+
+                = __('ssr.adminOrders.customer')
+
+              if order.customerId && order.customerId.email
+
+                if can('customers', 'read', 'any') && order.customerId._id
+
+                  a.d-block.mb-1(
+                    href='/admin/customers/' + String(order.customerId._id)
+                  )
+
+                    = order.customerId.email
+
+                else
+
+                  p.mb-1= order.customerId.email
+
+                if order.customerId.name
+
+                  p.mb-1= order.customerId.name
+
+                if order.customerId.userId
+
+                  small.text-secondary
+
+                    | ID: #{order.customerId.userId}
+
+              else
+
+                p.text-secondary
+
+                  = __('ssr.adminOrders.customerMissing')
+
+            .col-md-6
+
+              h5.fw-bold.mb-3
+
+                i.bi.bi-truck.me-2
+
+                = __('ssr.checkout.shippingAddress')
+
+              if order.shippingAddress
+
+                p.mb-1
+
+                  = order.shippingAddress.street + ' ' + order.shippingAddress.number
+
+                p.mb-1
+
+                  = order.shippingAddress.city + ', ' + order.shippingAddress.state
+
+                p.mb-0
+
+                  = order.shippingAddress.postalCode + ', ' + order.shippingAddress.country
+
+              else
+
+                p.text-secondary
+
+                  = __('ssr.myOrders.noAddress')
+
+        //- PRODUCTOS DEL PEDIDO
+
+        .card.p-4.mb-4
+
+          h5.fw-bold.mb-3
+
+            = __('ssr.myOrders.products')
+
+          .table-responsive
+
+            table.table.align-middle
+
+              thead.table-light
+
+                tr
+
+                  th= __('ssr.myOrders.product')
+                  th= __('ssr.cart.quantity')
+                  th= __('ssr.myOrders.unitPrice')
+                  th= __('ssr.cart.subtotal')
+
+              tbody
+
+                each item in order.items
+
+                  tr
+
+                    td
+
+                      .fw-semibold
+
+                        = item.name || ('#' + item.productId)
+
+                      if item.sku
+
+                        small.text-secondary= item.sku
+
+                    td= item.quantity
+
+                    td
+
+                      = formatMoney(String(item.unitPrice))
+
+                    td
+
+                      = formatMoney(Number(String(item.unitPrice)) * item.quantity)
+
+          .text-end
+
+            h5.fw-bold
+
+              = __('ssr.cart.total') + ': '
+
+              = formatMoney(String(order.totals.total))
+
+        //- HISTORIAL COMPLETO
+
+        .card.p-4
+
+          h5.fw-bold.mb-4
+
+            i.bi.bi-clock-history.me-2
+
+            = __('ssr.myOrders.history')
+
+          if history.length
+
+            each entry in history.slice().reverse()
+
+              .border-start.border-2.ps-3.pb-4
+
+                .d-flex.flex-wrap.align-items-center.gap-2
+
+                  +orderStatus(entry.status)
+
+                  if entry.changedAt
+
+                    small.text-secondary
+
+                      = formatDate(entry.changedAt)
+
+                small.text-secondary.d-block.mt-2
+
+                  = __('ssr.adminOrders.changedBy') + ': '
+
+                  = entry.changedById != null ? entry.changedById : '—'
+
+                if entry.note
+
+                  p.mb-0.mt-2= entry.note
+
+          else
+
+            p.text-secondary
+
+              = __('ssr.myOrders.noHistory')
+
+      .col-lg-4
+
+        //- TOTALES
+
+        .card.p-4.mb-4
+
+          h5.fw-bold.mb-4
+
+            = __('ssr.cart.summary')
+
+          .d-flex.justify-content-between.mb-3
+
+            span= __('ssr.cart.subtotal')
+
+            strong= formatMoney(String(order.totals.subtotal || 0))
+
+          .d-flex.justify-content-between.mb-3
+
+            span= __('ssr.cart.shipping')
+
+            strong= formatMoney(String(order.totals.shipping || 0))
+
+          .d-flex.justify-content-between.mb-3
+
+            span= __('ssr.myOrders.discount')
+
+            strong= formatMoney(String(order.totals.discount || 0))
+
+          hr
+
+          .d-flex.justify-content-between.fs-5
+
+            strong= __('ssr.cart.total')
+
+            strong= formatMoney(String(order.totals.total))
+
+        //- FORMULARIO DE CAMBIO DE ESTADO
+
+        .card.p-4
+
+          h5.fw-bold.mb-3
+
+            = __('ssr.adminOrders.changeStatus')
+
+          if errors.general
+
+            .alert.alert-danger(role='alert')
+
+              = errors.general
+
+          if can('orders', 'update', 'any')
+
+            if allowedStatuses.length
+
+              form(
+                method='POST'
+                action='/admin/orders/' + String(order._id) + '/status'
+              )
+
+                .mb-3
+
+                  label.form-label(for='status')
+
+                    = __('ssr.adminOrders.newStatus')
+
+                  select.form-select(
+                    id='status'
+                    name='status'
+                    required
+                    class=(errors.status ? 'is-invalid' : '')
+                  )
+
+                    option(value='')
+
+                      = __('ssr.adminOrders.selectStatus')
+
+                    each status in allowedStatuses
+
+                      option(
+                        value=status
+                        selected=(values.status === status)
+                      )= __('ssr.dashboard.status.' + status)
+
+                  if errors.status
+
+                    .invalid-feedback= errors.status
+
+                .mb-3
+
+                  label.form-label(for='note')
+
+                    = __('ssr.adminOrders.note')
+
+                  textarea.form-control(
+                    id='note'
+                    name='note'
+                    rows='4'
+                    maxlength='250'
+                    class=(errors.note ? 'is-invalid' : '')
+                  )= values.note
+
+                  if errors.note
+
+                    .invalid-feedback= errors.note
+
+                button.btn.btn-dark.w-100(type='submit')
+
+                  i.bi.bi-check-circle.me-2
+
+                  = __('ssr.common.save')
+
+            else
+
+              .alert.alert-secondary.mb-0
+
+                = __('ssr.adminOrders.finalStatus')
+
+          else
+
+            .alert.alert-secondary.mb-0
+
+              = __('ssr.inventory.readOnly')

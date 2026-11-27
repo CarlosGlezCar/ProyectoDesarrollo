@@ -1,6 +1,6 @@
 const request = require('supertest');
 const app = require('../app');
-const { Customer } = require('../models/mongo');
+const { Customer, Order } = require('../models/mongo');
 const { User } = require('../models/sql');
 const { mockSession } = require('./helpers/session');
 const { query } = require('./helpers/mongo');
@@ -307,6 +307,11 @@ describe('Rutas de clientes (con mocks)', () => {
   });
 
   describe('DELETE /api/customers/:id', () => {
+
+    beforeEach(() => {
+      jest.spyOn(Order, 'exists')
+        .mockResolvedValue(null);
+    });
     test('responde 200 y elimina el cliente', async () => {
       const remove = jest
         .spyOn(Customer, 'findByIdAndDelete')
