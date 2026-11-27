@@ -1,0 +1,165 @@
+
+extends ../../layouts/admin
+
+block content
+
+  .container-fluid.p-0
+
+    .d-flex.flex-wrap.justify-content-between.align-items-center.gap-3.mb-4
+
+      p.text-secondary.mb-0
+
+        = __('ssr.adminUsers.description')
+
+      if can('users', 'create', 'any')
+
+        a.btn.btn-dark(href='/admin/users/new')
+
+          i.bi.bi-person-plus.me-2
+
+          = __('ssr.adminUsers.newTitle')
+
+    .row.g-3.mb-4
+
+      .col-md-4
+
+        .stat
+
+          .tiny.text-secondary
+
+            = __('ssr.adminUsers.totalUsers')
+
+          strong= users.length
+
+      .col-md-4
+
+        .stat
+
+          .tiny.text-secondary
+
+            = __('ssr.adminUsers.activeUsers')
+
+          strong= users.filter(user => user.active).length
+
+      .col-md-4
+
+        .stat
+
+          .tiny.text-secondary
+
+            = __('ssr.adminUsers.inactiveUsers')
+
+          strong= users.filter(user => !user.active).length
+
+    .card.shadow-sm
+
+      if users.length === 0
+
+        .card-body.text-center.py-5
+
+          i.bi.bi-people.fs-1.text-secondary
+
+          h5.mt-3
+
+            = __('ssr.adminUsers.empty')
+
+      else
+
+        .table-responsive
+
+          table.table.table-hover.align-middle.mb-0
+
+            thead.table-light
+
+              tr
+
+                th ID
+                th= __('ssr.adminUsers.fullName')
+                th= __('ssr.adminUsers.email')
+                th= __('ssr.adminUsers.role')
+                th= __('ssr.adminUsers.status')
+                th= __('ssr.adminUsers.actions')
+
+            tbody
+
+              each user in users
+
+                - const self = currentUser && String(currentUser.id) === String(user.id)
+
+                tr
+
+                  td= user.id
+
+                  td
+
+                    .fw-semibold
+
+                      = user.first_name + ' ' + user.last_name
+
+                    if self
+
+                      small.text-secondary
+
+                        = __('ssr.adminUsers.currentAccount')
+
+                  td= user.email
+
+                  td
+
+                    span.badge.text-bg-light
+
+                      = user.role ? user.role.name : '—'
+
+                  td
+
+                    if user.active
+
+                      span.badge.text-bg-success
+
+                        = __('ssr.common.active')
+
+                    else
+
+                      span.badge.text-bg-secondary
+
+                        = __('ssr.common.inactive')
+
+                  td
+
+                    if can('users', 'update', 'any')
+
+                      .d-flex.flex-wrap.gap-2
+
+                        a.btn.btn-outline-dark.btn-sm(
+                          href='/admin/users/' + user.id + '/edit'
+                        )
+
+                          i.bi.bi-pencil.me-1
+
+                          = __('ssr.common.edit')
+
+                        if !self
+
+                          form(
+                            method='POST'
+                            action='/admin/users/' + user.id + '/status'
+                          )
+
+                            input(
+                              type='hidden'
+                              name='active'
+                              value=user.active ? 'false' : 'true'
+                            )
+
+                            button.btn.btn-sm(
+                              type='submit'
+                              class=(user.active ? 'btn-outline-danger' : 'btn-outline-success')
+                            )
+
+                              = user.active ? __('ssr.adminUsers.deactivate') : __('ssr.adminUsers.activate')
+
+                    else
+
+                      span.text-secondary
+
+                        = __('ssr.inventory.readOnly')

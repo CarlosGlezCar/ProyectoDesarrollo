@@ -1,0 +1,98 @@
+
+extends ../../layouts/admin
+
+block content
+
+  .container-fluid.p-0
+
+    p.text-secondary.mb-4
+
+      = __('ssr.adminRoles.description')
+
+    .row.g-3.mb-4
+
+      .col-md-6
+
+        .stat
+
+          .tiny.text-secondary
+
+            = __('ssr.adminRoles.totalRoles')
+
+          strong= roles.length
+
+      .col-md-6
+
+        .stat
+
+          .tiny.text-secondary
+
+            = __('ssr.adminRoles.totalAssignments')
+
+          strong= roles.reduce((sum, role) => sum + (role.permissions || []).length, 0)
+
+    .card.shadow-sm
+
+      if roles.length === 0
+
+        .card-body.text-center.py-5
+
+          i.bi.bi-shield-lock.fs-1.text-secondary
+
+          h5.mt-3
+
+            = __('ssr.adminRoles.empty')
+
+      else
+
+        .table-responsive
+
+          table.table.table-hover.align-middle.mb-0
+
+            thead.table-light
+
+              tr
+
+                th ID
+                th= __('ssr.adminRoles.role')
+                th= __('ssr.adminRoles.roleDescription')
+                th= __('ssr.adminRoles.permissions')
+                th= __('ssr.adminRoles.actions')
+
+            tbody
+
+              each role in roles
+
+                tr
+
+                  td= role.id
+
+                  td
+
+                    .fw-bold= role.name
+
+                  td= role.description
+
+                  td
+
+                    span.badge.text-bg-light
+
+                      = (role.permissions || []).length
+
+                  td
+
+                    if can('roles', 'update', 'any')
+
+                      a.btn.btn-outline-dark.btn-sm(
+                        href='/admin/roles/' + role.id + '/edit'
+                      )
+
+                        i.bi.bi-pencil.me-1
+
+                        = __('ssr.adminRoles.editPermissions')
+
+                    else
+
+                      span.text-secondary
+
+                        = __('ssr.inventory.readOnly')
