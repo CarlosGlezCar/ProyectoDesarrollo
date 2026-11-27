@@ -210,27 +210,43 @@ describe('Variantes de Productos E2E (/api/variants)', () => {
     // POST con un sku repetido (el de una variante existente) responde 400
     const existingVariant = await createTestVariant('duplicate-base');
 
-    const resDuplicateSku = await api()
-      .post('/api/variants')
-      .set('Accept-Language', 'es')
-      .set(bearer(adminToken))
-      .send({
-        productId: testProductId,
-        sku: existingVariant.sku
-      });
+    // POST sin talla responde 400
+    const resNoSize = await api().post('/api/variants').set('Accept-Language', 'es').set(bearer(adminToken)).send({
+      productId: testProductId,
+      sku: `E2E-NO-SIZE-${Date.now()}`,
+      color: 'Negro'
+    });
+
+    expect(resNoSize.statusCode).toBe(400);
+
+    // POST sin color responde 400
+    const resNoColor = await api().post('/api/variants').set('Accept-Language', 'es').set(bearer(adminToken)).send({
+      productId: testProductId,
+      sku: `E2E-NO-COLOR-${Date.now()}`,
+      size: '40'
+    });
+
+    expect(resNoColor.statusCode).toBe(400);
+
+    const resDuplicateSku = await api().post('/api/variants').set('Accept-Language', 'es').set(bearer(adminToken)).send({
+      productId: testProductId,
+      sku: existingVariant.sku,
+      size: '40',
+      color: 'Negro',
+      active: true
+    });
 
     expect(resDuplicateSku.statusCode).toBe(400);
     expect([es.variants.duplicateSku, es.common.duplicate]).toContain(resDuplicateSku.body.message);
 
     // POST con productId inexistente responde 404 con variants.productNotFound
-    const resNoProduct = await api()
-      .post('/api/variants')
-      .set('Accept-Language', 'es')
-      .set(bearer(adminToken))
-      .send({
-        productId: 99999999,
-        sku: `E2E-NONEXISTENT-${Date.now()}`
-      });
+    const resNoProduct = await api().post('/api/variants').set('Accept-Language', 'es').set(bearer(adminToken)).send({
+      productId: 99999999,
+      sku: `E2E-NONEXISTENT-${Date.now()}`,
+      size: '40',
+      color: 'Negro',
+      active: true
+    });
 
     expect(resNoProduct.statusCode).toBe(404);
     expect(resNoProduct.body.message).toBe(es.variants.productNotFound);

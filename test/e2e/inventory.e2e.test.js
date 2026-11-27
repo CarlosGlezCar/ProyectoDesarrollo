@@ -11,6 +11,31 @@ describe('Inventario de Variantes E2E (/api/inventory)', () => {
   let sharedInventoryId;
   const createdVariantIds = [];
 
+  async function removeInitialInventory(variantId) {
+    const response = await api()
+      .get(`/api/variants/${variantId}`)
+      .set('Accept-Language', 'es')
+      .set(bearer(adminToken));
+
+    expect(response.statusCode).toBe(200);
+
+    const inventory = response.body.data.inventory;
+
+    // Comprobar que F9 creo el inventario automaticamente
+    expect(inventory).toBeTruthy();
+    expect(inventory).toHaveProperty('id');
+    expect(inventory.stock).toBe(0);
+    expect(inventory.reserved).toBe(0);
+
+    // Eliminar exclusivamente el inventario de prueba
+    const deleteRes = await api()
+      .delete(`/api/inventory/${inventory.id}`)
+      .set('Accept-Language', 'es')
+      .set(bearer(adminToken));
+
+    expect(deleteRes.statusCode).toBe(200);
+  }
+
   beforeAll(async () => {
     adminToken = await login('ADMIN');
     salesToken = await login('SALES');
@@ -106,6 +131,7 @@ describe('Inventario de Variantes E2E (/api/inventory)', () => {
 
   test('1. Ciclo completo sobre el inventario de la primera variante', async () => {
     // POST /api/inventory con variantId, stock 10 y reserved 2 responde 201 con el mensaje inventory.created
+    await removeInitialInventory(variant1Id);
     const postRes = await api()
       .post('/api/inventory')
       .set('Accept-Language', 'es')
@@ -245,7 +271,8 @@ describe('Inventario de Variantes E2E (/api/inventory)', () => {
 
     expect(resReservedExceeds.statusCode).toBe(400);
     expect(resReservedExceeds.body.message).toBe(es.inventory.reservedExceedsStock);
-
+    
+    await removeInitialInventory(variant2Id);
     // Un primer POST sobre la segunda variante responde 201
     const firstPostVariant2 = await api()
       .post('/api/inventory')
