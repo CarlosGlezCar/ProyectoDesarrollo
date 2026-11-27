@@ -1,0 +1,105 @@
+
+extends ../../layouts/admin
+
+block content
+
+  .container-fluid.p-0
+
+    .d-flex.justify-content-between.align-items-center.mb-4
+
+      div
+        p.text-muted.mb-0= __('ssr.products.description')
+
+      if can('products', 'create', 'any')
+        a.btn.btn-primary(href='/admin/products/new')
+          i.bi.bi-plus-lg.me-2
+          = __('ssr.products.new')
+
+    if products.length === 0
+
+      .card.shadow-sm
+        .card-body.text-center.py-5
+          i.bi.bi-box-seam.fs-1.text-muted
+          h5.mt-3= __('ssr.products.empty')
+
+    else
+
+      .card.shadow-sm
+        .table-responsive
+
+          table.table.table-hover.align-middle.mb-0
+
+            thead.table-light
+              tr
+                th= __('ssr.products.id')
+                th= __('ssr.products.name')
+                th= __('ssr.products.category')
+                th= __('ssr.products.price')
+                th= __('ssr.products.status')
+                th= __('ssr.products.variants')
+                th= __('ssr.products.actions')
+
+            tbody
+
+              each product in products
+
+                - const categoryKey = categoryKeyById[product.category_id] || 'other'
+
+                tr
+
+                  td= product.id
+
+                  td
+                    .fw-semibold= product.name
+                    small.text-muted= product.brand
+
+                  td= __('ssr.categories.' + categoryKey)
+
+                  td= formatMoney(product.price)
+
+                  td
+                    if product.active
+                      span.badge.text-bg-success
+                        = __('ssr.common.active')
+                    else
+                      span.badge.text-bg-secondary
+                        = __('ssr.common.inactive')
+
+                  td= product.variants ? product.variants.length : 0
+
+                  td
+                    .d-flex.flex-wrap.gap-2
+
+                      if can('products', 'update', 'any')
+
+                        a.btn.btn-outline-primary.btn-sm(
+                          href='/admin/products/' + product.id + '/edit'
+                        )
+                          i.bi.bi-pencil.me-1
+                          = __('ssr.common.edit')
+
+                        form(
+                          method='POST'
+                          action='/admin/products/' + product.id + '/status'
+                        )
+                          input(
+                            type='hidden'
+                            name='active'
+                            value=(product.active ? 'false' : 'true')
+                          )
+
+                          button.btn.btn-outline-secondary.btn-sm(type='submit')
+                            if product.active
+                              = __('ssr.products.deactivate')
+                            else
+                              = __('ssr.products.activate')
+
+                      if can('products', 'delete', 'any')
+
+                        form(
+                          method='POST'
+                          action='/admin/products/' + product.id + '/delete'
+                        )
+                          button.btn.btn-outline-danger.btn-sm(type='submit')
+                            i.bi.bi-trash.me-1
+                            = __('ssr.common.delete')

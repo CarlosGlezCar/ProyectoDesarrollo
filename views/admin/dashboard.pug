@@ -1,0 +1,234 @@
+
+extends ../layouts/admin
+
+mixin statCard(label, value, iconName)
+
+  .col-6.col-xl-3
+
+    .stat.h-100
+
+      .tiny.text-secondary.mb-2
+
+        i.bi.me-1(class='bi-' + iconName)
+
+        = label
+
+      strong= value
+
+mixin orderStatus(status)
+
+  - const colors = {pending: 'warning', paid: 'success', shipped: 'info', delivered: 'success', cancelled: 'danger', unknown: 'secondary'}
+
+  - const safeStatus = Object.hasOwn(colors, status) ? status : 'unknown'
+
+  span.badge(class='text-bg-' + colors[safeStatus])
+    = __('ssr.dashboard.status.' + safeStatus)
+
+block content
+
+  .container-fluid.p-0
+
+    p.text-secondary.mb-4
+      = __('ssr.dashboard.description')
+
+    //- Indicadores principales
+
+    .row.g-3.mb-4
+
+      +statCard(
+        __('ssr.dashboard.products'),
+        stats.products,
+        'box-seam'
+      )
+
+      +statCard(
+        __('ssr.dashboard.variants'),
+        stats.variants,
+        'tags'
+      )
+
+      +statCard(
+        __('ssr.dashboard.stock'),
+        stats.stock,
+        'stack'
+      )
+
+      +statCard(
+        __('ssr.dashboard.orders'),
+        stats.orders,
+        'receipt'
+      )
+
+    .row.g-4
+
+      //- Pedidos recientes
+
+      .col-lg-8
+
+        .card.p-3.h-100
+
+          h5.fw-bold.mb-3
+            = __('ssr.dashboard.recentOrders')
+
+          if recentOrders.length === 0
+
+            .text-center.py-5
+
+              i.bi.bi-receipt.fs-1.text-secondary
+
+              p.text-secondary.mt-3.mb-0
+                = __('ssr.dashboard.emptyOrders')
+
+          else
+
+            .table-responsive
+
+              table.table.table-hover.align-middle.mb-0
+
+                thead.table-light
+
+                  tr
+
+                    th= __('ssr.dashboard.orderId')
+
+                    th= __('ssr.dashboard.date')
+
+                    th= __('ssr.dashboard.total')
+
+                    th= __('ssr.dashboard.orderStatus')
+
+                tbody
+
+                  each order in recentOrders
+
+                    tr
+
+                      td
+
+                        a.text-decoration-none(
+                          href='/admin/orders/' + order.id
+                        )
+
+                          code= order.id
+
+                      td
+
+                        if order.createdAt
+                          = formatDate(order.createdAt)
+                        else
+                          | —
+
+                      td.fw-semibold
+
+                        = formatMoney(order.total)
+
+                      td
+
+                        +orderStatus(order.status)
+
+      //- Acciones rapidas
+
+      .col-lg-4
+
+        .card.p-3.h-100
+
+          h5.fw-bold.mb-3
+            = __('ssr.dashboard.quickActions')
+
+          .d-grid.gap-2
+
+            if can('products', 'read', 'any')
+
+              a.btn.btn-outline-dark(
+                href='/admin/products'
+              )
+
+                i.bi.bi-box-seam.me-2
+
+                = __('ssr.dashboard.manageProducts')
+
+            if can('variants', 'read', 'any')
+
+              a.btn.btn-outline-dark(
+                href='/admin/variants'
+              )
+
+                i.bi.bi-tags.me-2
+
+                = __('ssr.dashboard.manageVariants')
+
+            if can('inventory', 'read', 'any')
+
+              a.btn.btn-outline-dark(
+                href='/admin/inventory'
+              )
+
+                i.bi.bi-stack.me-2
+
+                = __('ssr.dashboard.manageInventory')
+
+            a.btn.btn-outline-secondary(href='/')
+
+              i.bi.bi-shop.me-2
+
+              = __('ssr.nav.store')
+
+            if can('orders', 'read', 'any')
+
+              a.btn.btn-outline-dark(href='/admin/orders')
+
+                i.bi.bi-receipt.me-2
+
+                = __('ssr.adminOrders.title')
+            
+            if can('customers', 'read', 'any')
+
+              a.btn.btn-outline-dark(href='/admin/customers')
+
+                i.bi.bi-people.me-2
+
+                = __('ssr.adminCustomers.title')
+
+            if can('users', 'read', 'any')
+              a.btn.btn-outline-dark(href='/admin/users')
+                i.bi.bi-person-gear.me-2
+                = __('ssr.adminUsers.title')
+
+            if can('roles', 'read', 'any')
+              a.btn.btn-outline-dark(href='/admin/roles')
+                i.bi.bi-shield-lock.me-2
+                = __('ssr.adminRoles.title')
+
+    //- Origen de los datos
+
+    .row.g-3.mt-2
+
+      .col-md-6
+
+        .card.p-3
+
+          .d-flex.align-items-center.gap-3
+
+            i.bi.bi-database.fs-2.text-primary
+
+            div
+
+              h6.fw-bold.mb-1 PostgreSQL
+
+              small.text-secondary
+                = __('ssr.dashboard.sqlDescription')
+
+      .col-md-6
+
+        .card.p-3
+
+          .d-flex.align-items-center.gap-3
+
+            i.bi.bi-database.fs-2.text-success
+
+            div
+
+              h6.fw-bold.mb-1 MongoDB
+
+              small.text-secondary
+                = __('ssr.dashboard.mongoDescription')

@@ -1,0 +1,142 @@
+
+extends ../../layouts/admin
+
+include ../../mixins/formField
+
+block content
+
+  .container-fluid.p-0
+
+    p.text-secondary.mb-4
+      = __('ssr.inventory.description')
+
+    .alert.alert-info
+
+      i.bi.bi-info-circle.me-2
+
+      = __('ssr.inventory.rule')
+
+    if inventory.length === 0
+
+      .card.shadow-sm
+
+        .card-body.text-center.py-5
+
+          i.bi.bi-box-seam.fs-1.text-muted
+
+          h5.mt-3
+            = __('ssr.inventory.empty')
+
+    else
+
+      .card.shadow-sm
+
+        .table-responsive
+
+          table.table.table-hover.align-middle.mb-0
+
+            thead.table-light
+
+              tr
+                th SKU
+                th= __('ssr.inventory.product')
+                th= __('ssr.inventory.stock')
+                th= __('ssr.inventory.reserved')
+                th= __('ssr.inventory.available')
+                th= __('ssr.inventory.actions')
+
+            tbody
+
+              each item in inventory
+
+                - const available = Number(item.stock) - Number(item.reserved)
+                - const editing = editingVariantId === item.variant_id
+                - const formId = 'inventory-' + item.variant_id
+                - const stockValue = editing ? values.stock : String(item.stock)
+                - const reservedValue = editing ? values.reserved : String(item.reserved)
+
+                tr
+
+                  td
+                    code= item.variant ? item.variant.sku : item.variant_id
+
+                  td
+
+                    if item.variant && item.variant.product
+
+                      .fw-semibold
+                        = item.variant.product.name
+
+                      small.text-muted
+                        = item.variant.size + ' / ' + item.variant.color
+
+                    else
+
+                      span.text-muted
+                        = __('ssr.inventory.productMissing')
+
+                  td
+
+                    if can('inventory', 'update', 'any')
+
+                      +formField('stock', __('ssr.inventory.stock'), 'text', stockValue, editing ? errors.stock : null)(
+                        form=formId
+                        id=formId + '-stock'
+                        inputmode='numeric'
+                        required
+                      )
+
+                    else
+                      = item.stock
+
+                  td
+
+                    if can('inventory', 'update', 'any')
+
+                      +formField('reserved', __('ssr.inventory.reserved'), 'text', reservedValue, editing ? errors.reserved : null)(
+                        form=formId
+                        id=formId + '-reserved'
+                        inputmode='numeric'
+                        required
+                      )
+
+                    else
+                      = item.reserved
+
+                  td
+
+                    if available > 0
+
+                      span.badge.text-bg-success
+                        = available
+
+                    else
+
+                      span.badge.text-bg-danger
+                        = available
+
+                  td
+
+                    if can('inventory', 'update', 'any')
+
+                      form(
+                        id=formId
+                        method='POST'
+                        action='/admin/inventory/' + item.variant_id
+                      )
+
+                        button.btn.btn-primary.btn-sm(type='submit')
+
+                          i.bi.bi-check-lg.me-1
+
+                          = __('ssr.common.save')
+
+                      if editing && errors.general
+
+                        small.text-danger.d-block.mt-2
+                          = errors.general
+
+                    else
+
+                      span.text-muted
+                        = __('ssr.inventory.readOnly')

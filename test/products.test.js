@@ -1,6 +1,6 @@
 const request = require('supertest');
 const app = require('../app');
-const { Product } = require('../models/sql');
+const { Product, ProductVariant } = require('../models/sql');
 const { mockSession } = require('./helpers/session');
 const es = require('../locales/es.json');
 const en = require('../locales/en.json');
@@ -196,7 +196,8 @@ describe('Rutas de productos (con mocks)', () => {
     test('DELETE responde 200 y elimina', async () => {
       const destroy = jest.fn().mockResolvedValue();
       jest.spyOn(Product, 'findByPk').mockResolvedValue({ id: 3, destroy });
-
+      jest.spyOn(ProductVariant, 'count').mockResolvedValue(0);
+      
       const response = await request(app)
         .delete('/api/products/3')
         .set('Accept-Language', 'es')
@@ -218,6 +219,41 @@ describe('Rutas de productos (con mocks)', () => {
 
       expect(response.statusCode).toBe(403);
       expect(find).not.toHaveBeenCalled();
+
+      
+    });
+
+    test('DELETE rechaza productos con variantes relacionadas', async () => {
+
+      const destroy = jest.fn();
+
+      jest.spyOn(Product, 'findByPk')
+        .mockResolvedValue({
+          id: 1,
+          destroy
+        });
+
+      const count = jest.spyOn(ProductVariant, 'count')
+        .mockResolvedValue(2);
+
+      const response = await request(app)
+        .delete('/api/products/1')
+        .set('Accept-Language', 'es')
+        .set(auth);
+
+      expect(response.statusCode).toBe(400);
+
+      expect(response.body.message)
+        .toBe(es.ssr.products.cannotDeleteWithVariants);
+
+      expect(count).toHaveBeenCalledWith({
+        where: {
+          product_id: 1
+        }
+      });
+
+      expect(destroy).not.toHaveBeenCalled();
+
     });
   });
 });

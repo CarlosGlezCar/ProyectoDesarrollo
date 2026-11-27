@@ -1,0 +1,98 @@
+
+extends ../../layouts/admin
+
+include ../../mixins/formField
+
+block content
+
+  .container-fluid.p-0
+
+    .d-flex.justify-content-between.align-items-center.flex-wrap.gap-3.mb-4
+
+      p.text-muted.mb-0
+        = __('ssr.variants.formDescription')
+
+      a.btn.btn-outline-secondary(href='/admin/variants')
+        i.bi.bi-arrow-left.me-2
+        = __('ssr.common.cancel')
+
+    form(method='POST' action=formAction)
+
+      .card.shadow-sm
+
+        .card-body
+
+          .row.g-3
+
+            //- Producto relacionado
+
+            .col-12
+
+              label.form-label(for='productId')
+                = __('ssr.variants.product')
+
+              select.form-select(
+                id='productId'
+                name='productId'
+                required
+                class=(errors.productId ? 'is-invalid' : '')
+              )
+
+                option(value='')
+                  = __('ssr.variants.selectProduct')
+
+                if variant.productId && !products.some(p => String(p.id) === variant.productId)
+                  option(value=variant.productId selected)
+                    = __('ssr.variants.productMissing') + ' #' + variant.productId
+
+                each product in products
+
+                  option(
+                    value=product.id
+                    selected=(variant.productId === String(product.id))
+                  )
+                    = product.name
+                    if !product.active
+                      = ' (' + __('ssr.common.inactive') + ')'
+
+              if errors.productId
+                .invalid-feedback= errors.productId
+
+            //- SKU
+
+            .col-12
+
+              +formField('sku', 'SKU', 'text', variant.sku, errors.sku)(required maxlength='100' placeholder='STRIDE-001-27')
+
+            //- Talla
+
+            .col-md-6
+
+              +formField('size', __('ssr.variants.size'), 'text', variant.size, errors.size)(required maxlength='20')
+
+            //- Color
+
+            .col-md-6
+
+              +formField('color', __('ssr.variants.color'), 'text', variant.color, errors.color)(required maxlength='30')
+
+            if !isEdit
+
+              .col-12
+
+                .alert.alert-info.mb-0
+
+                  i.bi.bi-info-circle.me-2
+
+                  = __('ssr.variants.inventoryNotice')
+
+        .card-footer.bg-white.d-flex.justify-content-end.gap-2
+
+          a.btn.btn-outline-secondary(href='/admin/variants')
+            = __('ssr.common.cancel')
+
+          button.btn.btn-primary(type='submit' disabled=(products.length === 0))
+
+            i.bi.bi-check-lg.me-2
+
+            = isEdit ? __('ssr.variants.update') : __('ssr.variants.create')
