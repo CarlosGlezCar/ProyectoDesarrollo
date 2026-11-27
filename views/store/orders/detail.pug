@@ -1,0 +1,227 @@
+
+extends ../../layouts/store
+
+include ../../mixins/orderStatus
+
+block content
+
+  - const history = order.statusHistory || []
+  - const currentStatus = history.length ? history[history.length - 1].status : 'unknown'
+
+  .container.py-5
+
+    a.btn.btn-link.text-dark.text-decoration-none.p-0.mb-4(
+      href='/my/orders'
+    )
+
+      i.bi.bi-arrow-left.me-2
+
+      = __('ssr.myOrders.backToOrders')
+
+    .d-flex.flex-wrap.justify-content-between.align-items-center.gap-3.mb-4
+
+      div
+
+        h1.fw-bold.mb-2
+
+          = __('ssr.myOrders.detailTitle')
+
+        code= String(order._id)
+
+        if order.createdAt
+
+          p.text-secondary.mt-2.mb-0
+
+            = formatDate(order.createdAt)
+
+      div
+
+        +orderStatus(currentStatus)
+
+    .row.g-4
+
+      .col-lg-8
+
+        //- PRODUCTOS DEL PEDIDO
+
+        .card.p-4.mb-4
+
+          h5.fw-bold.mb-4
+
+            = __('ssr.myOrders.products')
+
+          .table-responsive
+
+            table.table.align-middle
+
+              thead.table-light
+
+                tr
+
+                  th= __('ssr.myOrders.product')
+
+                  th= __('ssr.cart.quantity')
+
+                  th= __('ssr.myOrders.unitPrice')
+
+                  th= __('ssr.cart.subtotal')
+
+              tbody
+
+                each item in order.items
+
+                  tr
+
+                    td
+
+                      .fw-semibold
+
+                        = item.name || ('#' + item.productId)
+
+                      if item.sku
+
+                        small.text-secondary
+
+                          = item.sku
+
+                    td= item.quantity
+
+                    td
+
+                      = formatMoney(String(item.unitPrice))
+
+                    td
+
+                      = formatMoney(Number(String(item.unitPrice)) * item.quantity)
+
+        //- DIRECCION DE ENVIO
+
+        .card.p-4.mb-4
+
+          h5.fw-bold.mb-3
+
+            i.bi.bi-truck.me-2
+
+            = __('ssr.checkout.shippingAddress')
+
+          if order.shippingAddress
+
+            p.mb-1
+
+              = order.shippingAddress.street + ' ' + order.shippingAddress.number
+
+            p.mb-1
+
+              = order.shippingAddress.city + ', ' + order.shippingAddress.state
+
+            p.mb-0
+
+              = order.shippingAddress.postalCode + ', ' + order.shippingAddress.country
+
+          else
+
+            p.text-secondary.mb-0
+
+              = __('ssr.myOrders.noAddress')
+
+        //- HISTORIAL DE ESTADOS
+
+        .card.p-4
+
+          h5.fw-bold.mb-4
+
+            i.bi.bi-clock-history.me-2
+
+            = __('ssr.myOrders.history')
+
+          if history.length
+
+            each entry in history.slice().reverse()
+
+              .border-start.border-2.ps-3.pb-4
+
+                .d-flex.flex-wrap.align-items-center.gap-2
+
+                  +orderStatus(entry.status)
+
+                  if entry.changedAt
+
+                    small.text-secondary
+
+                      = formatDate(entry.changedAt)
+
+                if entry.note
+
+                  p.text-secondary.mt-2.mb-0
+
+                    = entry.note
+
+          else
+
+            p.text-secondary
+
+              = __('ssr.myOrders.noHistory')
+
+      //- RESUMEN
+
+      .col-lg-4
+
+        .card.p-4.mb-4
+
+          h5.fw-bold.mb-4
+
+            = __('ssr.cart.summary')
+
+          .d-flex.justify-content-between.mb-3
+
+            span= __('ssr.cart.subtotal')
+
+            strong
+
+              = formatMoney(String(order.totals.subtotal || 0))
+
+          .d-flex.justify-content-between.mb-3
+
+            span= __('ssr.cart.shipping')
+
+            strong
+
+              = formatMoney(String(order.totals.shipping || 0))
+
+          .d-flex.justify-content-between.mb-3
+
+            span= __('ssr.myOrders.discount')
+
+            strong
+
+              = formatMoney(String(order.totals.discount || 0))
+
+          hr
+
+          .d-flex.justify-content-between.fs-5
+
+            strong= __('ssr.cart.total')
+
+            strong
+
+              = formatMoney(String(order.totals.total))
+
+        .card.p-4
+
+          h5.fw-bold.mb-3
+
+            = __('ssr.checkout.paymentMethod')
+
+          p.mb-0
+
+            i.bi.bi-wallet2.me-2
+
+            - const payment = order.paymentMethod
+
+            if ['cash', 'card', 'transfer'].includes(payment)
+
+              = __('ssr.checkout.payment.' + payment)
+
+            else
+
+              = payment || '—'
