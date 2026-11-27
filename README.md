@@ -353,18 +353,3 @@ node scripts/audit-evidence.js
 5. Agregar las claves de traducción a ambos archivos de `locales/`, definir título, descripción y estados vacíos.
 6. Probar permisos, errores HTTP, formularios, PRG, idiomas y datos SSR; verificar funcionamiento sin JavaScript y diseño móvil.
 7. Agregar las pruebas y las evidencias en `docs/ssr/` y actualizar la tabla de funcionalidades.
-
-## 13. Trabajo colaborativo y entrega
-
-La integración final debe realizarse en `staging`. Conservar las ramas de funcionalidad en el repositorio remoto, documentar commits descriptivos con Conventional Commits (`feat`, `fix`, `test`, `docs`, `refactor`) y actualizar GitHub Project con los responsables y tareas reales. No fabricar contribuciones ni atribuir commits a integrantes que no los realizaron.
-
-### Pendientes antes de entregar
-
-- [x] Confirmar responsables reales de F1–F14 y completar la tabla.
-- [ ] Revisar las capturas y registros para comprobar que no muestran secretos ni datos personales.
-- [ ] Integrar las ramas con sus commits y actualizar GitHub Project.
-- [ ] Desplegar la versión final desde `staging`, verificar las dos bases y el seed.
-- [ ] Confirmar las URL públicas y probar tienda, panel, login, permisos, idiomas y checkout simulado.
-- [ ] Actualizar el estado de despliegue de este README con resultados reales.
-
-Entrega: URL del repositorio de GitHub, con `staging` actualizada.
